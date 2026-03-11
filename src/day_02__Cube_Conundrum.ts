@@ -13,7 +13,8 @@ import * as readline from 'readline';
  */
 type HashMapColorCount = Record<string, number>;
 
-function sumColors( pStrCubeColors: string | undefined ): HashMapColorCount {
+
+function getMaxCubeColors( pStrCubeColors: string | undefined ): HashMapColorCount {
 
     const regex = /(\d+)\s+([a-zA-Z]+)\b/g;
 
@@ -36,13 +37,12 @@ function sumColors( pStrCubeColors: string | undefined ): HashMapColorCount {
 
             const color = regex_matcher[ 2 ].toLowerCase();
 
-            hash_map_color_count[ color ] = ( hash_map_color_count[ color ] ?? 0 ) + value;
+            hash_map_color_count[ color ] = Math.max( ( hash_map_color_count[ color ] ?? 0 ), value );
         }
     }
 
     return hash_map_color_count;
 }
-
 
 
 function checkColors( pStrCubeColors: string | undefined ): boolean {
@@ -76,25 +76,19 @@ function checkColors( pStrCubeColors: string | undefined ): boolean {
 }
 
 
+function calcPowerOfColors( pHashMap: HashMapColorCount ): number {
 
-
-
-function checkPossible( pHashMap: HashMapColorCount ): boolean {
-
-    if ( pHashMap === undefined ) return false;
+    if ( pHashMap === undefined ) return 0;
 
     const red = pHashMap[ "red" ];
     const blue = pHashMap[ "blue" ];
     const green = pHashMap[ "green" ];
 
-    if ( red === undefined || blue === undefined || green === undefined ) return false; // falls keys fehlen
+    if ( red === undefined || blue === undefined || green === undefined ) return 0; // falls keys fehlen
 
-    if ( red > 12 ) return false;
-    if ( blue > 13 ) return false;
-    if ( green > 14 ) return false;
-
-    return true;
+    return red * green * blue;
 }
+
 
 function calcArray( pArray: string[] ): void {
 
@@ -110,7 +104,11 @@ function calcArray( pArray: string[] ): void {
 
         const game_nr: number = match ? Number( match[ 1 ] ) : 0;
 
-        //let hash_map_color_count = sumColors( str_cube_colors );
+        let hash_map_color_count = getMaxCubeColors( str_cube_colors );
+
+        let power_of_colors = calcPowerOfColors( hash_map_color_count );
+
+        result_part_02 += power_of_colors;
 
         let knz_possible = checkColors( str_cube_colors );
 
@@ -118,13 +116,13 @@ function calcArray( pArray: string[] ): void {
             result_part_01 += game_nr;
         }
 
-        //console.log( ( knz_possible ? " +  " : "    " ) + "  " + game_nr + "   " + str_game + " --- " + str_cube_colors + " Sum Colors Red " + hash_map_color_count[ "red" ] + "  Blue " + hash_map_color_count[ "blue" ] + "  Green " + hash_map_color_count[ "green" ] + " " );
-        console.log( ( knz_possible ? " +  " : "    " ) + "  " + game_nr + "   " + str_game + " --- " + str_cube_colors  );
+        console.log( ( knz_possible ? " +  " : "    " ) + "  " + game_nr + "   " + power_of_colors + " --- " + str_cube_colors );
     }
 
     console.log( "Result Part 1 = " + result_part_01 );
     console.log( "Result Part 2 = " + result_part_02 );
 }
+
 
 function getTestArray(): string[] {
     const array_test: string[] = [];
@@ -137,7 +135,6 @@ function getTestArray(): string[] {
 
     return array_test;
 }
-
 
 
 async function readFileLines(): Promise<string[]> {
@@ -161,8 +158,8 @@ async function readFileLines(): Promise<string[]> {
     return lines;
 }
 
-function checkReaddatei(): void 
-{
+
+function checkReaddatei(): void {
     ( async () => {
 
         const arrFromFile = await readFileLines();
@@ -172,8 +169,8 @@ function checkReaddatei(): void
 
 }
 
-console.log( "Day 02 - Cube Conundrum" );
 
+console.log( "Day 02 - Cube Conundrum" );
 
 checkReaddatei();
 
