@@ -4,27 +4,10 @@ import * as readline from 'readline';
 type PropertieMap = Record<string, string>;
 
 
-function getDebugMap( pHashMap: PropertieMap, pRows: number, pCols: number ): string {
-
-    let str_result: string = "";
-
-    for ( let cur_row: number = 0; cur_row < pRows; cur_row++ ) {
-
-        for ( let cur_col: number = 0; cur_col < pCols; cur_col++ ) 
-        {
-            str_result += pHashMap[ "R" + cur_row + "C" + cur_col ] ?? " ";
-        }
-
-        str_result += "\n";
-    }
-
-    return str_result;
-}
-
-
 function checkForSymbol( pHashMap: PropertieMap, pRow: number, pCol: number ): boolean {
 
     const symbols_char_list = [ '$', '/', '*', '+', '=', '&', '%', '#', '@', '-', '*', '#', '-', '+', '$', '@', '+', '$', '%', '+', '$', '+', '*', '=', '#', '%', '/', '@', '&', '$', '-' ];
+
 
     if ( symbols_char_list.includes( pHashMap[ "R" + ( pRow - 1 ) + "C" + ( pCol - 1 ) ] ?? "." ) ) return true;
     if ( symbols_char_list.includes( pHashMap[ "R" + ( pRow - 1 ) + "C" + pCol         ] ?? "." ) ) return true;
@@ -41,8 +24,169 @@ function checkForSymbol( pHashMap: PropertieMap, pRow: number, pCol: number ): b
 }
 
 
-function calcArray( pArray: string[] ): void {
+function getNumber( pHashMap: PropertieMap, pRow: number, pCol: number ): number {
 
+    let cur_col = pCol;
+
+    let cur_char: string = pHashMap[ "R" + pRow + "C" + cur_col ] ?? " ";
+
+    /*
+     * Find the start of the number
+     */
+    while ( cur_char >= '0' && cur_char <= '9' ) 
+    {
+        cur_col--;
+
+        cur_char = pHashMap[ "R" + pRow + "C" + cur_col ] ?? ".";
+    }
+
+    cur_col++;
+
+    /*
+     * Get the Number
+     */
+
+    let result_nr: string = "0";
+
+    cur_char = pHashMap[ "R" + pRow + "C" + cur_col ] ?? ".";
+
+    while ( cur_char >= '0' && cur_char <= '9' ) 
+    {
+        result_nr += cur_char;
+
+        cur_col++;
+
+        cur_char = pHashMap[ "R" + pRow + "C" + cur_col ] ?? ".";
+    }
+
+    return Number( result_nr );
+}
+
+
+function checkForNumber( pHashMap: PropertieMap, pRow: number, pCol: number ): boolean 
+{
+    const number_char_list = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ];
+
+    return ( number_char_list.includes( pHashMap[ "R" + pRow + "C" + ( pCol ) ] ?? "." ) );
+}
+
+
+function checkNumber( pHashMap: PropertieMap, pRow: number, pCol: number ): number {
+
+    let knz_above_number_1: boolean = checkForNumber( pHashMap, pRow - 1, pCol - 1 );
+    let knz_above_number_2: boolean = checkForNumber( pHashMap, pRow - 1, pCol );
+    let knz_above_number_3: boolean = checkForNumber( pHashMap, pRow - 1, pCol + 1 );
+
+    let knz_left_number: boolean = checkForNumber( pHashMap, pRow, pCol - 1 );
+    let knz_right_number: boolean = checkForNumber( pHashMap, pRow, pCol + 1 );
+
+    let knz_bottom_number_1: boolean = checkForNumber( pHashMap, pRow + 1, pCol - 1 );
+    let knz_bottom_number_2: boolean = checkForNumber( pHashMap, pRow + 1, pCol );
+    let knz_bottom_number_3: boolean = checkForNumber( pHashMap, pRow + 1, pCol + 1 );
+
+    let above_number_1: number = 0;
+    let above_numer_2: number = 0;
+    let bottom_number_1: number = 0;
+    let bottom_number_2: number = 0;
+    let number_left: number = 0;
+    let number_right: number = 0;
+
+    if ( knz_left_number ) 
+    {
+        number_left = getNumber( pHashMap, pRow, pCol - 1 ); 
+    }
+
+    if ( knz_right_number ) 
+    {
+        number_right = getNumber( pHashMap, pRow, pCol + 1 ); 
+    }
+
+    if ( knz_above_number_1 && knz_above_number_2 && knz_above_number_3 ) 
+    {
+        above_number_1 = getNumber( pHashMap, pRow - 1, pCol - 1 ); 
+    }
+    else if ( knz_above_number_1 && !knz_above_number_2 && !knz_above_number_3 ) 
+    {
+        above_number_1 = getNumber( pHashMap, pRow - 1, pCol - 1 ); 
+    }
+    else if ( !knz_above_number_1 && !knz_above_number_2 && knz_above_number_3 ) 
+    {
+        above_number_1 = getNumber( pHashMap, pRow - 1, pCol + 1 ); 
+    }
+    else if ( knz_above_number_1 && !knz_above_number_2 && knz_above_number_3 ) 
+    {
+        above_number_1 = getNumber( pHashMap, pRow - 1, pCol - 1 ); 
+
+        above_numer_2 = getNumber( pHashMap, pRow - 1, pCol + 1 ); 
+    }
+    else if ( knz_above_number_1 ) 
+    {
+        above_number_1 = getNumber( pHashMap, pRow - 1, pCol - 1 ); 
+    }
+    else if ( knz_above_number_2 ) 
+    {
+        above_number_1 = getNumber( pHashMap, pRow - 1, pCol ); 
+    }
+
+    if ( knz_bottom_number_1 && knz_bottom_number_2 && knz_bottom_number_3 ) 
+    {
+        bottom_number_1 = getNumber( pHashMap, pRow + 1, pCol - 1 ); 
+    }
+    else if ( knz_bottom_number_1 && !knz_bottom_number_2 && !knz_bottom_number_3 ) 
+    {
+        bottom_number_1 = getNumber( pHashMap, pRow + 1, pCol - 1 ); 
+    }
+    else if ( !knz_bottom_number_1 && !knz_bottom_number_2 && knz_bottom_number_3 ) 
+    {
+        bottom_number_1 = getNumber( pHashMap, pRow + 1, pCol + 1 ); 
+    }
+    else if ( knz_bottom_number_1 && !knz_bottom_number_2 && knz_bottom_number_3 ) 
+    {
+        bottom_number_1 = getNumber( pHashMap, pRow + 1, pCol - 1 ); 
+
+        bottom_number_2 = getNumber( pHashMap, pRow + 1, pCol + 1 ); 
+    }
+    else if ( knz_bottom_number_2 ) 
+    {
+        bottom_number_1 = getNumber( pHashMap, pRow + 1, pCol ); 
+    }
+
+    //console.log( " nr_1 " + above_number_1 + "  nr_2 " + above_numer_2 + "  nr_b1 " + bottom_number_1 + "  nr_b2 " + bottom_number_2 + "  nr_left " + number_left + "   nr_right " + number_right );
+
+    let number_1: number = 0;
+    let number_2: number = 0;
+
+    let nr_arr: number[] = [ above_number_1, above_numer_2, bottom_number_1, bottom_number_2, number_left, number_right ];
+
+    for ( let i = 0; i < nr_arr.length; i++ ) 
+    {
+        if ( nr_arr[ i ] !== 0 ) 
+        {
+            if ( number_1 == 0 ) { number_1 = nr_arr[ i ] ?? 0; }
+            else if ( number_2 == 0 ) { number_2 = nr_arr[ i ] ?? 0; }
+        }
+    }
+
+    if ( ( number_1 > 0 ) && ( number_2 > 0 ) ) 
+    {
+        console.log( " number_1 " + number_1 + " number_1 " + number_1 + "  = " + ( number_1 * number_2 ) );
+
+        return number_1 * number_2;
+    }
+
+    console.log( " number_1 " + number_1 + " number_1 " + number_1 + "  = 0 " );
+
+    return 0;
+}
+
+
+function calcArray( pArray: string[] ): void 
+{
+    /*
+     * *******************************************************************************************************
+     * Initializing the grid
+     * *******************************************************************************************************
+     */
     let result_part_01: number = 0;
 
     let result_part_02: number = 0;
@@ -70,27 +214,29 @@ function calcArray( pArray: string[] ): void {
 
     grid_cols++;
 
-    //let deb_map : string = getDebugMap( hash_map, grid_rows, grid_cols );
-
-    //console.log( "" );
-    //console.log( deb_map );
+    /*
+     * *******************************************************************************************************
+     * Calculating Part 1
+     * *******************************************************************************************************
+     */
 
     console.log( "" );
 
     let cur_number: number = 0;
     let cur_number_ok: boolean = true;
 
-    for ( let cur_row: number = 0; cur_row < grid_rows; cur_row++ ) {
-
-        for ( let cur_col: number = 0; cur_col < grid_cols; cur_col++ ) {
-
+    for ( let cur_row: number = 0; cur_row < grid_rows; cur_row++ ) 
+    {
+        for ( let cur_col: number = 0; cur_col < grid_cols; cur_col++ ) 
+        {
             let cur_char = hash_map[ "R" + cur_row + "C" + cur_col ] ?? " ";
 
             /*
              * Check for Number
              */
 
-            if ( cur_char >= '0' && cur_char <= '9' ) {
+            if ( cur_char >= '0' && cur_char <= '9' ) 
+            {
                 /*
                  * Add Up the numbers
                  */
@@ -103,10 +249,10 @@ function calcArray( pArray: string[] ): void {
                     cur_number_ok = checkForSymbol( hash_map, cur_row, cur_col );
                 }
             }
-            else {
-
-                if ( ( cur_number > 0 ) && ( cur_number_ok ) ) {
-
+            else 
+            {
+                if ( ( cur_number > 0 ) && ( cur_number_ok ) ) 
+                {
                     result_part_01 += cur_number;
                 }
 
@@ -116,11 +262,28 @@ function calcArray( pArray: string[] ): void {
         }
     }
 
+    /*
+     * *******************************************************************************************************
+     * Calculating Part 2
+     * *******************************************************************************************************
+     */
+
+    for ( let cur_row: number = 0; cur_row < grid_rows; cur_row++ ) {
+
+        for ( let cur_col: number = 0; cur_col < grid_cols; cur_col++ ) {
+
+            let cur_char = hash_map[ "R" + cur_row + "C" + cur_col ] ?? " ";
+
+            if ( cur_char === '*' ) {
+                result_part_02 += checkNumber( hash_map, cur_row, cur_col );
+            }
+        }
+    }
+
     console.log( "" );
     console.log( "Result Part 1 = " + result_part_01 );
     console.log( "Result Part 2 = " + result_part_02 );
 }
-
 
 async function readFileLines(): Promise<string[]> {
 
@@ -143,14 +306,14 @@ async function readFileLines(): Promise<string[]> {
     return lines;
 }
 
-function checkReaddatei(): void {
+function checkReaddatei(): void 
+{
     ( async () => {
 
         const arrFromFile = await readFileLines();
 
         calcArray( arrFromFile );
     } )();
-
 }
 
 function getTestArray(): string[] {
@@ -171,11 +334,11 @@ function getTestArray(): string[] {
     return array_test;
 }
 
-
 console.log( "Day 03 - Gear Ratios" );
 
 //calcArray( getTestArray() );
 
 checkReaddatei();
+
 
 
