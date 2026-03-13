@@ -86,7 +86,59 @@ import * as readline from 'readline';
  * (3) [4, 8, 9]
  * 
  * Result Part 1 = 288
- * Result Part 2 = 0
+ * ---------------------------------------------------------------------------------------------
+ * 
+ * PART 2
+ * 
+ * Calc Nr. 0  speed_for_distance 1.2857142857142858  hat NK true next int 2
+ * Calc Nr. 1  speed_for_distance 1.8  hat NK true next int 2
+ * 
+ * Race Time        7
+ * Distance to beat 9
+ * Button Push Time 2
+ * From             2
+ * To               5
+ * Diff Time        4
+ * 
+ * --------------------------------------------------
+ * 
+ * Calc Nr. 0  speed_for_distance 2.6666666666666665  hat NK true next int 3
+ * Calc Nr. 1  speed_for_distance 3.3333333333333335  hat NK true next int 4
+ * Calc Nr. 2  speed_for_distance 3.6363636363636362  hat NK true next int 4
+ * 
+ * Race Time        15
+ * Distance to beat 40
+ * Button Push Time 4
+ * From             4
+ * To               11
+ * Diff Time        8
+ * 
+ * --------------------------------------------------
+ * 
+ * Calc Nr. 0  speed_for_distance 6.666666666666667  hat NK true next int 7
+ * Calc Nr. 1  speed_for_distance 8.695652173913043  hat NK true next int 9
+ * Calc Nr. 2  speed_for_distance 9.523809523809524  hat NK true next int 10
+ * Calc Nr. 3  speed_for_distance 10  hat NK false next int 10
+ * 
+ * Race Time        30
+ * Distance to beat 200
+ * Button Push Time 10
+ * From             10
+ * To               20
+ * Diff Time        11 <------- Wrong
+ * 
+ * --------------------------------------------------
+ * 
+ * Calc Nr. 0  speed_for_distance 13.144135327834475  hat NK true next int 14
+ * Calc Nr. 1  speed_for_distance 13.146708428883047  hat NK true next int 14
+ * 
+ * Race Time        71530
+ * Distance to beat 940200
+ * Button Push Time 14
+ * From             14
+ * To               71516
+ * Diff Time        71503
+ * Day 06 - Wait For It
  * 
  */
 
@@ -181,6 +233,56 @@ function calcArray( pArray: string[] ): void
     console.log( "Result Part 2 = " + result_part_02 );
 }
 
+
+function calcPart2( pTime : number,  pDistance : number) : void
+{
+    console.log( "\n--------------------------------------------------\n ");
+
+    let result_time_button_push : number = 0;
+
+    let time_current = pTime;
+
+    for ( let calc_nr = 0; calc_nr < 50; calc_nr++ )
+    {
+        const speed_for_distance = pDistance / time_current;
+
+        const time_button_push = Math.ceil(speed_for_distance); 
+
+        const time_new_for_distance = pTime - time_button_push; 
+
+        const speed_is_integer : boolean = !Number.isInteger(speed_for_distance);
+
+        console.log( "Calc Nr. " + calc_nr + "  speed_for_distance " + speed_for_distance + "  hat NK " +  speed_is_integer + " next int " + time_button_push  );
+
+        if ( !speed_is_integer )
+        {
+            result_time_button_push = time_button_push;
+            
+            break;
+        }
+
+        if (( time_current - time_new_for_distance ) == 0 )
+        {
+            result_time_button_push = time_button_push;
+            break;
+        }
+
+        time_current = time_new_for_distance;
+    }
+
+    let time_remaining_distance : number = pTime - ( result_time_button_push * 2 );
+
+
+    console.log( "" );
+    console.log( "Race Time        " + pTime );
+    console.log( "Distance to beat " + pDistance );
+    console.log( "Button Push Time " + result_time_button_push );
+    console.log( "From             " +  result_time_button_push );
+    console.log( "To               " + (pTime - result_time_button_push) );
+    console.log( "Diff Time        " + ((pTime - ( result_time_button_push * 2 )) + 1 ));
+}
+
+
 async function readFileLines(): Promise<string[]> 
 {
     const filePath: string = "/home/ea234/typescript/advent_of_code_2023__day06_input.txt";
@@ -224,10 +326,14 @@ function getTestArray(): string[]
     return array_test;
 }
 
-
 console.log( "Day 06 - Wait For It" );
 
-calcArray( getTestArray() );
+calcPart2( 7, 9 );
+calcPart2( 15, 40 );
+calcPart2( 30, 200 );
+calcPart2( 71530, 940200 );
+
+//calcArray( getTestArray() );
 
 //checkReaddatei();
 
