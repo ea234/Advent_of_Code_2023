@@ -1,0 +1,69 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+ {
+            "type": "node",
+            "request": "launch",
+            "name": "Day 01 - Trebuchet",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/dist/day01/day_01__Trebuchet.js",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        },
+        
+         {
+            "type": "node",
+            "request": "launch",
+            "name": "Day 02 - Cube Conundrum",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/dist/day02/day_02__Cube_Conundrum.js",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        },
+         {
+            "type": "node",
+            "request": "launch",
+            "name": "Day 03 - Gear Ratios",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/dist/day03/day_03__Gear_Ratios.js",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        },
+         {
+            "type": "node",
+            "request": "launch",
+            "name": "Day 04 - Scratchcards",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/dist/day04/day_04__Scratchcards.js",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        },
+         {
+            "type": "node",
+            "request": "launch",
+            "name": "Day 05 - If You Give A Seed A Fertilizer",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/dist/day05/day_05__If_You_Give_A_Seed_A_Fertilizer.js",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        }
+   ]
+}
