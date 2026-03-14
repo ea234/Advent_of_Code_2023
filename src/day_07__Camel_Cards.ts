@@ -5,32 +5,80 @@ import * as readline from 'readline';
  * https://adventofcode.com/2023/day/7
  *
  * 
+ * /home/ea234/.nvm/versions/node/v20.16.0/bin/node ./dist/day07/day_07__Camel_Cards.js
+ * Day 07 - Camel Cards
+ * Key: 5, Count: 3
+ * Key: T, Count: 1
+ * Key: J, Count: 1
+ * 
+ * checkHand -----------------------------------------
+ * T55J5
+ * {5: 3, T: 1, J: 1}
+ * hand_sort_value =>WW_<
+ * freq_of_two     =>0<
+ * freq_of_four    =>0<
+ * freq_of_five    =>0<
+ * freq_of_three   =>1<
+ * Key: 6, Count: 1
+ * Key: 7, Count: 2
+ * Key: K, Count: 2
+ * 
+ * checkHand -----------------------------------------
+ * KK677
+ * {6: 1, 7: 2, K: 2}
+ * hand_sort_value =>VV_LLEFF<
+ * freq_of_two     =>2<
+ * freq_of_four    =>0<
+ * freq_of_five    =>0<
+ * freq_of_three   =>0<
+ * Key: K, Count: 3
+ * Key: A, Count: 2
+ * 
+ * checkHand -----------------------------------------
+ * KKKAA
+ * {K: 3, A: 2}
+ * hand_sort_value =>XX_LLLMM<
+ * freq_of_two     =>1<
+ * freq_of_four    =>0<
+ * freq_of_five    =>0<
+ * freq_of_three   =>1<
+ * Key: 2, Count: 2
+ * Key: 3, Count: 1
+ * Key: 4, Count: 2
+ * 
+ * checkHand -----------------------------------------
+ * 22344
+ * {2: 2, 3: 1, 4: 2}
+ * hand_sort_value =>VV_AABCC<
+ * freq_of_two     =>2<
+ * freq_of_four    =>0<
+ * freq_of_five    =>0<
+ * freq_of_three   =>0<
+ * 
  */
 
-const CARD_STRENGTH_A : number = 13;
-const CARD_STRENGTH_K : number = 12;
-const CARD_STRENGTH_Q : number = 11;
-const CARD_STRENGTH_J : number = 10;
-const CARD_STRENGTH_T : number = 9;
-const CARD_STRENGTH_9 : number = 8;
-const CARD_STRENGTH_8 : number = 7;
-const CARD_STRENGTH_7 : number = 6;
-const CARD_STRENGTH_6 : number = 5;
-const CARD_STRENGTH_5 : number = 4;
-const CARD_STRENGTH_4 : number = 3;
-const CARD_STRENGTH_3 : number = 2;
-const CARD_STRENGTH_2 : number = 1;
+const STR_CARD_STRENGTH_A : string           = "M";
+const STR_CARD_STRENGTH_K : string           = "L";
+const STR_CARD_STRENGTH_Q : string           = "K";
+const STR_CARD_STRENGTH_J : string           = "J";
+const STR_CARD_STRENGTH_T : string           = "I";
+const STR_CARD_STRENGTH_9 : string           = "H";
+const STR_CARD_STRENGTH_8 : string           = "G";
+const STR_CARD_STRENGTH_7 : string           = "F";
+const STR_CARD_STRENGTH_6 : string           = "E";
+const STR_CARD_STRENGTH_5 : string           = "D";
+const STR_CARD_STRENGTH_4 : string           = "C";
+const STR_CARD_STRENGTH_3 : string           = "B";
+const STR_CARD_STRENGTH_2 : string           = "A";
 
-const HAND_TYPE_FIVE_OF_A_KIND  : number = 7;
-const HAND_TYPE_FOUR_OF_A_KIND  : number = 6;
-const HAND_TYPE_FULL_HOUSE      : number = 5;
-const HAND_TYPE_THREE_OF_A_KIND : number = 4;
-const HAND_TYPE_TWO_PAIRS       : number = 3;
-const HAND_TYPE_ONE_PAIR        : number = 2;
-const HAND_TYPE_HIGH_CARD       : number = 1;
+const STR_HAND_TYPE_FIVE_OF_A_KIND  : string = "zz_";
+const STR_HAND_TYPE_FOUR_OF_A_KIND  : string = "YY_";
+const STR_HAND_TYPE_FULL_HOUSE      : string = "XX_";
+const STR_HAND_TYPE_THREE_OF_A_KIND : string = "WW_";
+const STR_HAND_TYPE_TWO_PAIRS       : string = "VV_";
+const STR_HAND_TYPE_ONE_PAIR        : string = "UU_";
+const STR_HAND_TYPE_HIGH_CARD       : string = "TT_";
 
-const HAND_TYPE_TRUE : number = 1;
-const HAND_TYPE_FALSE : number = 0;
 
 class Hand 
 {
@@ -60,12 +108,6 @@ class Hand
 
         return "";
     }
-}
-
-
-function getNumberArray( pString: string ): number[] 
-{
-    return pString.trim().split( /\s+/ ).map( Number );
 }
 
 
@@ -142,10 +184,26 @@ function getTestArray(): string[]
     return array_test;
 }
 
-
-function checkHand( pInput : string ) : number
+function calcHandSortValue( pInput : string ) : string 
 {
     let r_card_count : Record< string, number > = {};
+    let r_card_strength : Record< string, string > = {};
+
+    r_card_strength[ "A" ] = STR_CARD_STRENGTH_A;
+    r_card_strength[ "K" ] = STR_CARD_STRENGTH_K;
+    r_card_strength[ "Q" ] = STR_CARD_STRENGTH_Q;
+    r_card_strength[ "J" ] = STR_CARD_STRENGTH_J;
+    r_card_strength[ "T" ] = STR_CARD_STRENGTH_T;
+    r_card_strength[ "9" ] = STR_CARD_STRENGTH_9;
+    r_card_strength[ "8" ] = STR_CARD_STRENGTH_8;
+    r_card_strength[ "7" ] = STR_CARD_STRENGTH_7;
+    r_card_strength[ "6" ] = STR_CARD_STRENGTH_6;
+    r_card_strength[ "5" ] = STR_CARD_STRENGTH_5;
+    r_card_strength[ "4" ] = STR_CARD_STRENGTH_4;
+    r_card_strength[ "3" ] = STR_CARD_STRENGTH_3;
+    r_card_strength[ "2" ] = STR_CARD_STRENGTH_2;
+
+    let hand_sort_value : string  = "";
 
     /*
      * Calculating the frequenzy of cards
@@ -157,7 +215,10 @@ function checkHand( pInput : string ) : number
     { 
         let card_key = pInput[ index ] ?? "NV";
 
+
         r_card_count[ card_key ] = (r_card_count[ card_key ] ?? 0 ) + 1;
+
+        hand_sort_value += r_card_strength[ card_key ];
     }
 
     let freq_of_two : number = 0;
@@ -167,10 +228,13 @@ function checkHand( pInput : string ) : number
 
     /*
      * Calculating pairs
+     *
+     * T55J5 = { 5: 3, T: 1, J: 1 }
+     * 
      */
     for (const [key, value] of Object.entries(r_card_count)) 
     {
-             if ( value == 2 ) { freq_of_two++;   }
+             if ( value == 2 ) { freq_of_two++;  }
         else if ( value == 3 ) { freq_of_three++; }
         else if ( value == 4 ) { freq_of_four++;  }
         else if ( value == 5 ) { freq_of_five++;  }
@@ -178,40 +242,41 @@ function checkHand( pInput : string ) : number
        console.log(`Key: ${key}, Count: ${value}`);
     }
 
+    if ( freq_of_five === 1 ) { hand_sort_value = STR_HAND_TYPE_FIVE_OF_A_KIND + hand_sort_value; }
+
+    else if ( freq_of_four === 1 ) { hand_sort_value = STR_HAND_TYPE_FOUR_OF_A_KIND + hand_sort_value; }
+
+    else if (( freq_of_three === 1 ) && ( freq_of_two === 1 ))  { hand_sort_value = STR_HAND_TYPE_FULL_HOUSE + hand_sort_value; }
+
+    else if ( freq_of_three === 1 ) { hand_sort_value = STR_HAND_TYPE_THREE_OF_A_KIND; + hand_sort_value; }
+
+    else if ( freq_of_two === 2 )  { hand_sort_value = STR_HAND_TYPE_TWO_PAIRS + hand_sort_value; }
+
+    else if ( freq_of_two === 1 )  { hand_sort_value = STR_HAND_TYPE_ONE_PAIR + hand_sort_value; }
+
+    else { hand_sort_value = STR_HAND_TYPE_HIGH_CARD + hand_sort_value; }
+
     console.log( "\ncheckHand -----------------------------------------");
     console.log( pInput );
     console.log( r_card_count );
+    console.log( "hand_sort_value =>" + hand_sort_value + "<" );
+    console.log( "freq_of_two     =>" + freq_of_two + "<" );
+    console.log( "freq_of_four    =>" + freq_of_four + "<" );
+    console.log( "freq_of_five    =>" + freq_of_five + "<" );
+    console.log( "freq_of_three   =>" + freq_of_three + "<" );
 
-    console.log( "freq_of_two   =>" + freq_of_two + "<" );
-    console.log( "freq_of_four  =>" + freq_of_four + "<" );
-    console.log( "freq_of_five  =>" + freq_of_five + "<" );
-    console.log( "freq_of_three =>" + freq_of_three + "<" );
-
-    if ( freq_of_five === 1 ) { return HAND_TYPE_FIVE_OF_A_KIND; }
-
-    if ( freq_of_four === 1 ) { return HAND_TYPE_FOUR_OF_A_KIND; }
-
-    if (( freq_of_three === 1 ) && ( freq_of_two === 1 ))  { return HAND_TYPE_FULL_HOUSE; }
-
-    if ( freq_of_three === 1 ) { return HAND_TYPE_THREE_OF_A_KIND; }
-
-    if ( freq_of_two === 2 )  { return HAND_TYPE_TWO_PAIRS; }
-
-    if ( freq_of_two === 1 )  { return HAND_TYPE_ONE_PAIR; }
-
-    return HAND_TYPE_HIGH_CARD;
+    return hand_sort_value;
 }
 
 console.log( "Day 07 - Camel Cards" );
 
-checkHand( "T55J5" );
-checkHand("KK677");
-checkHand("KKKAA");
-checkHand("22344");
+calcHandSortValue( "T55J5" );
+calcHandSortValue( "KK677" );
+calcHandSortValue( "KKKAA" );
+calcHandSortValue( "22344" );
 
 //calcArray( getTestArray() );
 
 //checkReaddatei();
-
 
 
