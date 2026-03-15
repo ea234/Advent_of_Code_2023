@@ -52,7 +52,7 @@ class MapNode
 
     constructor ( pInput : string )
     {
-        const [ name, left, right ] = pInput.replace( /[=(),]/g, " " ).trim().split( /\s+/ );
+        const [ name, left, right ] = pInput.toUpperCase().replace( /[=(),]/g, " " ).trim().split( /\s+/ );
 
         this.m_node_name = name!;
         this.m_node_left = left!;
@@ -79,6 +79,16 @@ class MapNode
         return ( pString === "R" ) ? this.m_node_right : this.m_node_left;
     }
 
+    public checkNameEndsWithZ(): boolean
+    {
+        return ( this.m_node_name[2] === "Z" );
+    }
+
+    public checkNameEndsWithA(): boolean
+    {
+        return ( this.m_node_name[2] === "A" );
+    }
+
     public toString() : string 
     {
         return "Node " + this.m_node_name + "  L " + this.m_node_left + "   R " + this.m_node_right ;
@@ -86,7 +96,7 @@ class MapNode
 }
 
 
-function calcArray( pArray: string[] ): void 
+function calcArray( pArray: string[], knz_calc_p1 : boolean  ): void 
 {
     /*
      * *******************************************************************************************************
@@ -101,6 +111,8 @@ function calcArray( pArray: string[] ): void
 
     let array_map_nodes : Record< string, MapNode > = {};
 
+    let array_map_nodes_a : MapNode[] = [];
+
     for ( const cur_input_str of pArray ) 
     {
         if ( cur_input_str !== "" )
@@ -114,8 +126,19 @@ function calcArray( pArray: string[] ): void
                 let map_node = new MapNode( cur_input_str );
 
                 array_map_nodes[ map_node.getNodeName() ] = map_node;
+
+                if ( map_node.checkNameEndsWithA() )
+                {
+                    //if ( map_node.getNodeName() !== "AAA" )
+                    if ( array_map_nodes_a.length < 3 )
+                    {
+                        array_map_nodes_a.push( map_node );
+                    }
+                }
             }
         }
+
+        console.log( cur_input_str );
     }
 
     /*
@@ -147,7 +170,80 @@ function calcArray( pArray: string[] ): void
      * *******************************************************************************************************
      */
 
-    let cur_map_node : MapNode = array_map_nodes[ "AAA" ]!;
+    if ( knz_calc_p1 )
+    {
+        let cur_map_node : MapNode = array_map_nodes[ "AAA" ]!;
+
+        let cur_lr_index : number = 0;
+
+        let step_count   : number = 0;
+
+        let step_dir     : string = lr_rule[ cur_lr_index ]!;
+
+        while ( ( cur_map_node.getNodeName() !== "ZZZ" ) && ( step_count < 10_000_000 ) )
+        {
+            let next_node_id = cur_map_node.getStepDirectionNode( step_dir );
+
+            step_count++;
+
+            console.log( "From " + cur_map_node.getNodeName() + " " + step_dir + " To " + next_node_id + "  steps " + step_count );
+
+            cur_map_node = array_map_nodes[ next_node_id ]!;
+
+            cur_lr_index++;
+
+            if ( cur_lr_index >= lr_rule.length )
+            {
+                cur_lr_index = 0;
+            }
+
+            step_dir = lr_rule[ cur_lr_index ]!;
+        }
+
+        result_part_01 = step_count;
+    }
+
+    console.log( "" );
+    console.log( "Result Part 1 = " + result_part_01 );
+
+
+    console.log( "" );
+    console.log( "a " + array_map_nodes_a.length );
+
+    Object.values(array_map_nodes_a).forEach((node) => {
+
+        console.log( "" );
+        console.log( node.toString());
+        
+    });
+
+    console.log( "" );
+    console.log( "" );
+
+    result_part_02 = calcStepsEndsWithZ( array_map_nodes, lr_rule, array_map_nodes_a );
+
+    console.log( "" );
+    console.log( "" );
+
+    console.log( "Result Part 2 = " + result_part_02 );
+
+    Object.values(array_map_nodes_a).forEach((node) => {
+
+        console.log( "" );
+        console.log( node.toString());
+        
+    });
+
+    /*
+    592153 tl
+    */
+    console.log( "b" );
+}
+
+
+function calcStepsEndsWithZ( array_map_nodes : Record< string, MapNode >, lr_rule : string, map_nodes_a : MapNode[] ) : number
+{
+    let knz_all_on_z : boolean = false;
 
     let cur_lr_index : number = 0;
 
@@ -155,15 +251,24 @@ function calcArray( pArray: string[] ): void
 
     let step_dir     : string = lr_rule[ cur_lr_index ]!;
 
-    while ( ( cur_map_node.getNodeName() !== "ZZZ" ) && ( step_count < 10_000_000 ) )
+    while ( ( knz_all_on_z === false ) && ( step_count < 30_000_000 ) )
     {
-        let next_node_id = cur_map_node.getStepDirectionNode( step_dir );
+        for ( let index_b = 0; index_b < map_nodes_a.length; index_b++ )
+        {
+            map_nodes_a[ index_b ] = array_map_nodes[ map_nodes_a[ index_b ]!.getStepDirectionNode( step_dir ) ]!;
+        }
 
         step_count++;
 
-        console.log( "From " + cur_map_node.getNodeName() + " " + step_dir + " To " + next_node_id + "  steps " + step_count );
+        knz_all_on_z = true;
 
-        cur_map_node = array_map_nodes[ next_node_id ]!;
+        for ( let index_b = 0; (index_b < map_nodes_a.length) && ( knz_all_on_z ); index_b++ )
+        {
+            if ( map_nodes_a[ index_b ]!.checkNameEndsWithZ() === false  )
+            {
+                knz_all_on_z = false;
+            }
+        }
 
         cur_lr_index++;
 
@@ -175,13 +280,16 @@ function calcArray( pArray: string[] ): void
         step_dir = lr_rule[ cur_lr_index ]!;
     }
 
-    result_part_01 = step_count;
+    if ( knz_all_on_z )
+    {
+        console.log( " Start a " +  " steps " + step_count   )
 
-    console.log( "" );
-    console.log( "Result Part 1 = " + result_part_01 );
-    console.log( "Result Part 2 = " + result_part_02 );
+        return step_count;
+
+    }
+
+    return Number.MAX_SAFE_INTEGER;
 }
-
 
 async function readFileLines(): Promise<string[]> 
 {
@@ -211,7 +319,7 @@ function checkReaddatei(): void
 
         const arrFromFile = await readFileLines();
 
-        calcArray( arrFromFile );
+        calcArray( arrFromFile, true );
     } )();
 }
 
@@ -248,10 +356,29 @@ function getTestArray2(): string[]
 }
 
 
+function getTestArray3(): string[] 
+{
+    const array_test: string[] = [];
+
+    array_test.push( "LR" );
+    array_test.push( "" );
+    array_test.push( "11A = (11B, XXX)" );
+    array_test.push( "11B = (XXX, 11Z)" );
+    array_test.push( "11Z = (11B, XXX)" );
+    array_test.push( "22A = (22B, XXX)" );
+    array_test.push( "22B = (22C, 22C)" );
+    array_test.push( "22C = (22Z, 22Z)" );
+    array_test.push( "22Z = (22B, 22B)" );
+    array_test.push( "XXX = (XXX, XXX)" );
+
+    return array_test;
+}
+
+
 console.log( "Day 08 - Haunted Wasteland" );
 
-calcArray( getTestArray1() );
+//calcArray( getTestArray1() );
+//calcArray( getTestArray2() );
 
-calcArray( getTestArray2() );
-
-//checkReaddatei();
+//calcArray( getTestArray3(), false );
+checkReaddatei();
