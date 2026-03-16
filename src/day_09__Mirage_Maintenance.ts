@@ -14,10 +14,10 @@ import * as readline from 'readline';
  *          3            3  (         0) =          3
  *         12           15  (         3) =         18
  * 
+ *       ------      ------      ------      ------
  * 
- * 0   3   6   9  12  15  18
- *   3   3   3   3   3   3
- *     0   0   0   0   0
+ *          3            3  (         0) =          3
+ *          0            3  (         3) =         -3
  * 
  * ------------------------------------------------------------
  * 
@@ -26,11 +26,11 @@ import * as readline from 'readline';
  *          5            6  (         1) =          7
  *         15           21  (         7) =         28
  * 
- * 1   3   6  10  15  21  28
- *   2   3   4   5   6   7
- *     1   1   1   1   1
- *       0   0   0   0
+ *       ------      ------      ------      ------
  * 
+ *          1            1  (         0) =          1
+ *          2            3  (         1) =          1
+ *          1            3  (         1) =          0
  * 
  * ------------------------------------------------------------
  * 
@@ -40,10 +40,20 @@ import * as readline from 'readline';
  *          9           15  (         8) =         23
  *         30           45  (        23) =         68
  * 
+ *       ------      ------      ------      ------
+ * 
+ *          2            2  (         0) =          2
+ *          0            2  (         2) =         -2
+ *          3            3  (        -2) =          5
+ *         10           13  (         5) =          5
+ * 
  * Result Part 1 = 114
- * Result Part 2 = 0
+ * Result Part 2 = 2
  * 
+ * ------------------------------------------------------------
  * 
+ * Result Part 1 = 2075724761
+ * Result Part 2 = 1072 
  * 
  */
 
@@ -67,7 +77,7 @@ function getNumberArray( pString : string ): number[]
 }
 
 
-function calcDiffRowRec( pInput : string ) : number 
+function calcDiffRowRec( pInput : string, pCalcPart1 : boolean ) : number 
 {
     /*
      * Create an number-array from the input
@@ -112,15 +122,27 @@ function calcDiffRowRec( pInput : string ) : number
 
     if ( knz_all_0 === false )
     {
-        diff_from_recursion = calcDiffRowRec( str_new_row );
+        diff_from_recursion = calcDiffRowRec( str_new_row, pCalcPart1 );
     }
 
+    
     /*
      * New Number = last element from the number-array plus the value from the recursion.
      */
-    let new_number = array_numbers[ array_numbers.length - 1 ]! + diff_from_recursion;
+    let new_number : number = 0;
 
-    console.log( pad( array_numbers[ array_numbers.length - 2 ]!, 10 ) + "   " + pad(  array_numbers[ array_numbers.length - 1 ]!, 10)  + "  (" + pad(  diff_from_recursion , 10 ) + ") = " + pad(  new_number , 10 ) );
+    if ( pCalcPart1 )
+    {
+        new_number = array_numbers[ array_numbers.length - 1 ]! + diff_from_recursion;
+
+        console.log( pad( array_numbers[ array_numbers.length - 2 ]!, 10 ) + "   " + pad(  array_numbers[ array_numbers.length - 1 ]!, 10)  + "  (" + pad(  diff_from_recursion , 10 ) + ") = " + pad(  new_number , 10 ) );
+    }
+    else
+    {
+        new_number = array_numbers[ 0 ]! - diff_from_recursion;
+
+        console.log( pad( array_numbers[ 0 ]!, 10 ) + "   " + pad(  array_numbers[ 1 ]!, 10)  + "  (" + pad(  diff_from_recursion , 10 ) + ") = " + pad(  new_number , 10 ) );
+    }
 
     return new_number
 }
@@ -139,9 +161,11 @@ function calcArray( pArray: string[] ): void
             console.log( "\n\n------------------------------------------------------------\n");
             console.log( cur_input_str );
 
-            let new_number_cur : number = calcDiffRowRec( cur_input_str );
+            result_part_01 += calcDiffRowRec( cur_input_str, true );
 
-            result_part_01 += new_number_cur;
+            console.log( "\n      ------      ------      ------      ------  \n");
+
+            result_part_02 += calcDiffRowRec( cur_input_str, false );
         }
     }
 
@@ -196,40 +220,9 @@ function getTestArray(): string[]
 }
 
 
-function calcDiffRow( pInput : string ) : string 
-{
-    let str_result : string = "";
-
-    let narray : number[] = getNumberArray( pInput );
-
-    let check_result : number = 0;
-
-    for ( let index_C = 0; index_C < ( narray.length - 1 ); index_C++ )
-    {
-        let diff_c = narray[ index_C + 1 ]! - narray[ index_C ]!;
-
-        check_result += diff_c;
-
-        str_result += " " + diff_c;
-    }
-
-    if ( check_result === 0 )
-    {
-        console.log( "---- 0 ----" );
-    }
-
-    return str_result;
-}
-
-
-
-
-
-
 console.log( "Day 09 - Mirage Maintenance" );
 
+calcArray( getTestArray() );
 
-//calcArray( getTestArray() );
-
-checkReaddatei();
+//checkReaddatei();
 
