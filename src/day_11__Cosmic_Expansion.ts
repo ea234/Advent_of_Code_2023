@@ -246,13 +246,16 @@ import * as readline from 'readline';
 
 type PropertieMap = Record< string, string >;
 
-const STR_COMBINE_SPACER   : string = "   "; 
+const STR_COMBINE_SPACER       : string = " ";
 
 const MAP_CHAR_GALAXY_INACTIVE : string = "X";
-const MAP_CHAR_GALAXY      : string = "#";
-const MAP_CHAR_SPACE       : string = ".";
-const MAP_CHAR_LINE_1      : string = "Q";
-const MAP_CHAR_LINE_STEP   : string = "Q";
+const MAP_CHAR_GALAXY_ACTIVE   : string = "#";
+const MAP_CHAR_SPACE           : string = ".";
+const MAP_CHAR_LINE_1          : string = "Q";
+const MAP_CHAR_LINE_STEP       : string = "Q";
+
+const MAP_EXPANSION_PART_1 : number = 1;
+const MAP_EXPANSION_PART_2 : number = 1_000_000;
 
 class GalaxyPos 
 {
@@ -366,7 +369,7 @@ function getDebugMap( pHashMap : PropertieMap, pMaxRows : number, pMaxCols : num
 }
 
 
-function lineBresenham( pMap : PropertieMap,  pRow1 : number, pCol1 : number, pRow2 : number, pCol2 : number, pChar1 : string = MAP_CHAR_LINE_1, pChar2 : string = MAP_CHAR_LINE_STEP ) : number
+function lineBresenham( pMap : PropertieMap,  pRow1 : number, pCol1 : number, pRow2 : number, pCol2 : number, pChar1 : string = MAP_CHAR_LINE_1, pChar2 : string = MAP_CHAR_LINE_STEP, pKnzDebug : boolean = false ) : number
 {
     // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
 
@@ -382,8 +385,8 @@ function lineBresenham( pMap : PropertieMap,  pRow1 : number, pCol1 : number, pR
      *  0 = no movement 
      *  1 = line direction to the right 
      */
-    let pos_row_plus_value    : number = Math.sign( pRow2 - pRow1 );
-    let pos_col_plus_value    : number = Math.sign( pCol2 - pCol1 );
+    let pos_row_plus_value : number = Math.sign( pRow2 - pRow1 );
+    let pos_col_plus_value : number = Math.sign( pCol2 - pCol1 );
 
     let pixel_count_target : number = 0;
     let pixel_count_cur    : number = 1;
@@ -417,7 +420,10 @@ function lineBresenham( pMap : PropertieMap,  pRow1 : number, pCol1 : number, pR
 
     while ( pixel_count_cur <= pixel_count_target )
     {
-        pMap[ "R" + pRow1 + "C" + pCol1 ] = pChar1;
+        if ( pKnzDebug )
+        {
+            pMap[ "R" + pRow1 + "C" + pCol1 ] = pChar1;
+        }
 
         count_steps++;
 
@@ -427,7 +433,10 @@ function lineBresenham( pMap : PropertieMap,  pRow1 : number, pCol1 : number, pR
         {
             if ( error_value > 0 )
             {
-                pMap[ "R" + ( pRow1 + pos_row_plus_value ) + "C" + pCol1 ] = pChar2;
+                if ( pKnzDebug )
+                {
+                    pMap[ "R" + ( pRow1 + pos_row_plus_value ) + "C" + pCol1 ] = pChar2;
+                }
 
                 count_steps++;
 
@@ -442,7 +451,10 @@ function lineBresenham( pMap : PropertieMap,  pRow1 : number, pCol1 : number, pR
         {
             if ( error_value > 0 )
             {
-                pMap[ "R" + pRow1 + "C" +( pCol1 + pos_col_plus_value) ] = pChar2;
+                if ( pKnzDebug )
+                {
+                    pMap[ "R" + pRow1 + "C" +( pCol1 + pos_col_plus_value) ] = pChar2;
+                }
 
                 count_steps++;
 
@@ -465,9 +477,12 @@ function calcArray( pArray: string[], pKnzExpansionFactorRow : number = 1, pKnzE
 {
     /*
      * *******************************************************************************************************
-     * Initializing the grid and expansion rows
+     * Initializing the grid and expansion of rows
      * *******************************************************************************************************
      */
+
+    console.log( "init grid - row expansion " );
+
     let map_input : PropertieMap = {};
 
     let expansion_factor_row = pKnzExpansionFactorRow > 0 ? pKnzExpansionFactorRow : 0;
@@ -491,7 +506,7 @@ function calcArray( pArray: string[], pKnzExpansionFactorRow : number = 1, pKnzE
 
             let cur_char_input : string = cur_modified_input_str[ grid_cols ] ?? MAP_CHAR_SPACE;
 
-            if ( ( cur_char_input === MAP_CHAR_GALAXY ) || ( cur_char_input === MAP_CHAR_GALAXY_INACTIVE ))
+            if ( ( cur_char_input === MAP_CHAR_GALAXY_ACTIVE ) || ( cur_char_input === MAP_CHAR_GALAXY_INACTIVE ))
             {
                 check_only_space = false;
             }
@@ -517,11 +532,15 @@ function calcArray( pArray: string[], pKnzExpansionFactorRow : number = 1, pKnzE
         }
     }
 
+    grid_cols++;
+
     /*
      * *******************************************************************************************************
      * Expansion cols
      * *******************************************************************************************************
      */
+
+    console.log( "init grid - col expansion R "  + grid_rows + " C " + grid_cols);
 
     let map_universe    : PropertieMap = {};
 
@@ -541,7 +560,7 @@ function calcArray( pArray: string[], pKnzExpansionFactorRow : number = 1, pKnzE
 
             let cur_char_input : string = map_input[ hash_map_input_key ] ?? MAP_CHAR_SPACE;
 
-            if ( ( cur_char_input === MAP_CHAR_GALAXY ) || ( cur_char_input === MAP_CHAR_GALAXY_INACTIVE ))
+            if ( ( cur_char_input === MAP_CHAR_GALAXY_ACTIVE ) || ( cur_char_input === MAP_CHAR_GALAXY_INACTIVE ))
             {
                 check_only_space = false;
             }
@@ -570,15 +589,18 @@ function calcArray( pArray: string[], pKnzExpansionFactorRow : number = 1, pKnzE
      * Collecting the Galaxy's (Row-Based, hence the extra loops. To get the numbering from the sample)
      * *******************************************************************************************************
      */
+
+    console.log( "Collecting Galaxys -  R "  + grid_rows + " C " + grid_cols);
+
     let map_galaxys : GalaxyPos[] = [];
 
-    for ( let nr_row_input = 0; nr_row_input < grid_rows_input; nr_row_input++  )
+    for ( let nr_row_input = 0; nr_row_input < grid_rows; nr_row_input++  )
     {
         for ( let nr_col_input = 0; nr_col_input < grid_cols; nr_col_input++  )
         {
-            let cur_char_input : string = map_input[ "R" + nr_row_input + "C" + nr_col_input ] ?? MAP_CHAR_SPACE;
+            let cur_char_input : string = map_universe[ "R" + nr_row_input + "C" + nr_col_input ] ?? MAP_CHAR_SPACE;
 
-            if ( cur_char_input === MAP_CHAR_GALAXY )
+            if ( cur_char_input === MAP_CHAR_GALAXY_ACTIVE )
             {
                 map_galaxys.push( new GalaxyPos( "G" + ( map_galaxys.length + 1 ), nr_row_input, nr_col_input ) );
             }
@@ -591,9 +613,9 @@ function calcArray( pArray: string[], pKnzExpansionFactorRow : number = 1, pKnzE
      * *******************************************************************************************************
      */
 
-    //const map_copy: PropertieMap = { ...map_universe };
+    const map_copy: PropertieMap = { ...map_universe };
     
-    let knz_debug_bresenham : boolean = true;
+    let knz_debug_bresenham : boolean = false;
 
     if ( knz_debug_bresenham )
     {
@@ -631,6 +653,8 @@ function calcArray( pArray: string[], pKnzExpansionFactorRow : number = 1, pKnzE
 
     for ( let index_1 = 0; index_1 < nr_of_galaxys; index_1++ )
     {
+        console.log( "index 1 " + index_1 + " of " + nr_of_galaxys + " " + result_part_01 + " " + nr_of_pairs );
+
         for ( let index_2 = 0; index_2 < nr_of_galaxys; index_2++ )
         {
             if ( ( index_1 != index_2 ) && ( ! vector_pairs_visited.includes( "G1 " + index_1 + "G2 " +  index_2 ) ) )
@@ -647,7 +671,10 @@ function calcArray( pArray: string[], pKnzExpansionFactorRow : number = 1, pKnzE
 
                 result_part_01 += step_count;
 
-                console.log( pad( nr_of_pairs, 5 ) + " " + galaxy_inst_1.getGalaxyName() + " - " + galaxy_inst_2.getGalaxyName() + " = " + step_count );
+                if ( pKnzDebug )
+                {
+                    console.log( pad( nr_of_pairs, 5 ) + " " + galaxy_inst_1.getGalaxyName() + " - " + galaxy_inst_2.getGalaxyName() + " = " + step_count );
+                }
             }
         }        
     }
@@ -662,14 +689,13 @@ function calcArray( pArray: string[], pKnzExpansionFactorRow : number = 1, pKnzE
     if ( pKnzDebug )
     {
         console.log( "" );
-        console.log( combineStrings( getDebugMap( map_input, grid_rows_input, grid_cols_input ) , getDebugMap( map_universe, grid_rows, grid_cols ) ) );
+        console.log( combineStrings( combineStrings( getDebugMap( map_input, grid_rows_input, grid_cols_input ) , getDebugMap( map_copy, grid_rows, grid_cols ) ), getDebugMap( map_universe, grid_rows, grid_cols ) ) );
         console.log( "" );
 
         for ( const galaxy_c of map_galaxys )
         {
             console.log( "Vektor G " + galaxy_c.toString() );
         }
-
     }
 
     console.log( "" );
@@ -700,13 +726,13 @@ async function readFileLines(): Promise<string[]>
 }
 
 
-function checkReaddatei(): void 
+function checkReaddatei( pExpansion : number): void 
 {
     ( async () => {
 
         const arrFromFile = await readFileLines();
 
-        calcArray( arrFromFile, 1, 1, false );
+        calcArray( arrFromFile, pExpansion, pExpansion, false );
     } )();
 }
 
@@ -786,6 +812,7 @@ function getTestArray1c(): string[]
     return array_test;
 }
 
+
 function getTestArray1d(): string[] 
 {
     const array_test: string[] = [];
@@ -824,6 +851,26 @@ function getTestArray1e(): string[]
 }
 
 
+
+function getTestArray1f(): string[] 
+{
+    const array_test: string[] = [];
+
+    array_test.push( "...X......" );
+    array_test.push( ".......#.." );
+    array_test.push( "X........." );
+    array_test.push( ".........." );
+    array_test.push( "......X..." );
+    array_test.push( ".X........" );
+    array_test.push( ".........#" );
+    array_test.push( ".........." );
+    array_test.push( ".......X.." );
+    array_test.push( "X...X....." );
+
+    return array_test;
+}
+
+
 function getTestArray2(): string[] 
 {
     const array_test: string[] = [];
@@ -840,6 +887,6 @@ function getTestArray2(): string[]
 console.log( "Day 11 - Cosmic Expansion" );
 
 //calcArray( getTestArray1(), 1, 1, true );
-calcArray( getTestArray2(), 10, 10, true );
+//calcArray( getTestArray2(), 10, 10, true );
 
-//checkReaddatei();
+checkReaddatei( MAP_EXPANSION_PART_1 );
