@@ -4,7 +4,6 @@ import * as readline from 'readline';
 /*
  * https://adventofcode.com/2023/day/13
  * 
- * 
  *      012345678
  *   0  #.##..##.
  *   1  ..#.##.#.
@@ -107,54 +106,29 @@ const CHAR_NOT_MAP    : string = "X";
 
 const STR_COMBINE_SPACER                 : string = "   "; 
 
-let file_string : string = "";
-let file_nr : number = 0;
+let file_string   : string = "";
+let file_nr       : number = 0;
+let file_write_on : boolean = false;
 
 function wl( pString : string )
 {
     console.log( pString );
 
-    file_string +="\n" + pString;
+    if ( file_write_on )
+    {
+        file_string +="\n" + pString;
+    }
 }
 
 
 function writeFile( pFileName: string, pFileData: string ): void 
 {
-    fs.writeFile( pFileName, pFileData, { flag: "w" } );
-
-    console.log( "File " + pFileName + " created!" );
-}
-
-
-function combineStrings(pString1: string | undefined | null, pString2: string | undefined | null): string 
-{
-    const lines1 = ( pString1 != null ? pString1.split(/\r?\n/) : [] );
-    const lines2 = ( pString2 != null ? pString2.split(/\r?\n/) : [] );
-
-    const max_lines = Math.max( lines1.length, lines2.length );
-
-    let result : string[] = [];
-
-    for ( let line_index = 0; line_index < max_lines; line_index++ ) 
+    if ( file_write_on )
     {
-        const str_a = line_index < lines1.length ? lines1[ line_index ] : "";
-        const str_b = line_index < lines2.length ? lines2[ line_index ] : "";
+        fs.writeFile( pFileName, pFileData, { flag: "w" } );
 
-        result.push( str_a + STR_COMBINE_SPACER + str_b );
+        console.log( "File " + pFileName + " created!" );
     }
-
-    return result.join("\n");
-}
-
-
-function strReplace(pText : string, pSearchText : string, pReplaceText : string ) : string  
-{
-    /*
-     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replaceAll
-     */
-
-    // only match at word boundaries
-    return pText.replaceAll( new RegExp(`${ pSearchText}`, "g"),  pReplaceText );
 }
 
 
@@ -165,19 +139,6 @@ function pad( pInput : string | number, pPadLeft : number ) : string
     while ( str_result.length < pPadLeft )
     { 
         str_result = " " + str_result;
-    }
-
-    return str_result;
-}
-
-
-function padR( pInput : string | number, pPadRight : number ) : string 
-{
-    let str_result : string = pInput.toString();
-
-    while ( str_result.length < pPadRight )
-    { 
-        str_result = str_result + " ";
     }
 
     return str_result;
@@ -203,7 +164,7 @@ function getDebugMap( pHashMap : PropertieMap, pMaxRows : number, pMaxCols : num
 
         for ( let cur_col = 0; cur_col < pMaxCols; cur_col++ )
         {
-            str_result += pHashMap[ "R" + cur_row  + "C" + cur_col  ] ?? CHAR_NOT_MAP;
+            str_result += pHashMap[ "R" + cur_row  + "C" + cur_col ] ?? CHAR_NOT_MAP;
         }
 
         str_result += "\n";
@@ -290,7 +251,7 @@ function getMirrorSteps( pVektor : number[], pStartIndex : number ): number
     let index_a = pStartIndex;
     let index_b = pStartIndex + 1;
 
-    while ( ( index_a >= 0 ) && ( index_b < pVektor.length ) && ( pVektor[index_a] === pVektor[index_b]) )
+    while ( ( index_a >= 0 ) && ( index_b < pVektor.length ) && ( pVektor[ index_a ] === pVektor[ index_b ]) )
     {
         index_a--;
 
@@ -312,12 +273,17 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
         wl( getDebugMap(  pMap, pMapRows, pMapCols ) );
     }
 
+    /*
+     * *******************************************************************************************************
+     * Calculating Hash-Values for Rows and Columns
+     * *******************************************************************************************************
+     */
     let hash_vektor_row : number[] = [];
     let hash_vektor_col : number[] = [];
 
     for ( let row_n : number = 0; row_n < pMapRows; row_n++ )
     {
-        hash_vektor_row[ row_n ] = calcRowHash(pMap, pMapCols, row_n);
+        hash_vektor_row[ row_n ] = calcRowHash( pMap, pMapCols, row_n );
 
         if ( pKnzDebug )
         {
@@ -332,7 +298,7 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
 
     for ( let col_n : number = 0; col_n < pMapCols; col_n++ )
     {
-        hash_vektor_col[ col_n ] = calcColHash(pMap, pMapCols, col_n);
+        hash_vektor_col[ col_n ] = calcColHash( pMap, pMapCols, col_n );
 
         if ( pKnzDebug )
         {
@@ -345,8 +311,13 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
         wl( "" )
     }
 
-    let diff_row  : number[] = [...hash_vektor_row];
-    let diff_col  : number[] = [...hash_vektor_col];
+    /*
+     * *******************************************************************************************************
+     * Calculating difference Vektors for Rows and Columns
+     * *******************************************************************************************************
+     */
+    let diff_row  : number[] = [ ...hash_vektor_row ];
+    let diff_col  : number[] = [ ...hash_vektor_col ];
 
     for ( let index_b : number = 0; index_b < ( hash_vektor_row.length - 1 ); index_b++ )
     {
@@ -371,6 +342,11 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
         wl( "" );
     }
 
+    /*
+     * *******************************************************************************************************
+     * For every 0 difference, calculate the steps in the mirrord hash-values (Rows)
+     * *******************************************************************************************************
+     */
     let max_total_step_count    : number = 0;
     let max_total_start_index_0 : number = -1;
     let max_start_index_0       : number = -1;
@@ -390,7 +366,7 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
                 max_start_index_0 = index_b;
             }
 
-            wl( "------- " + index_b + "  " + cur_step_count +"   = max " +  max_start_index_0  + "  " + max_step_count );            
+            wl( "------- " + index_b + "  " + cur_step_count + "   = max " +  max_start_index_0  + "  " + max_step_count );            
         }
     }
 
@@ -400,6 +376,11 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
         max_total_start_index_0 = max_start_index_0;
     }
     
+    /*
+     * *******************************************************************************************************
+     * For every 0 difference, calculate the steps in the mirrord hash-values (Columns)
+     * *******************************************************************************************************
+     */
     for ( let index_b : number = 0; index_b < ( hash_vektor_col.length - 1 ); index_b++ )
     {
         if ( diff_col[ index_b ] === 0 ) 
@@ -413,10 +394,15 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
                 max_start_index_0 = index_b;
             }
 
-            wl( "------- " + index_b + "  " + cur_step_count +"   = max " +  max_start_index_0  + "  " + max_step_count );            
+            wl( "------- " + index_b + "  " + cur_step_count + "   = max " +  max_start_index_0  + "  " + max_step_count );            
         }
     }
 
+    /*
+     * *******************************************************************************************************
+     * Determine, wether the Map is mirrored horizontal or vertical
+     * *******************************************************************************************************
+     */
     let knz_mirror_col : boolean = false;
 
     if ( max_step_count > max_total_step_count )
@@ -427,9 +413,14 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
         knz_mirror_col = true;
     }
 
+    /*
+     * *******************************************************************************************************
+     * Calculating the Result-Value
+     * *******************************************************************************************************
+     */
     let result_x : number = 0;
 
-    if ( max_total_step_count > 1)
+    if ( max_total_step_count > 1 )
     {
         wl( " Ergebnis  " + max_total_start_index_0  + "  " + max_total_step_count );
         wl( "" );
@@ -444,18 +435,19 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
         }
     }
 
-    wl( "" );
-    wl( "result_x = " + result_x );
-    wl( "" );
+    if ( pKnzDebug )
+    {
+        file_nr++;
 
+        wl( "" );
+        wl( "result_x = " + result_x );
+        wl( "" );
+        wl( createMapX( pMap, pMapRows, pMapCols ) );
+        wl( "" );
+        wl( "" );
 
-    file_nr++;
-
-    wl( createMapX( pMap, pMapRows, pMapCols ) );
-    wl( "" );
-    wl( "" );
-
-    writeFile( "/home/ea234/typescript/temp_day13/testfall_"+ file_nr + ".txt", file_string );
+        writeFile( "/home/ea234/typescript/temp_day13/testfall_" + file_nr + ".txt", file_string );
+    }
 
     file_string = "";
 
@@ -540,7 +532,7 @@ function checkReaddatei(): void
 
         const arrFromFile = await readFileLines();
 
-        calcArray( arrFromFile, true );
+        calcArray( arrFromFile, false );
     } )();
 }
 
@@ -607,8 +599,9 @@ calcArray( getTestArray1());
 
 /*
 1111 = tl
-28244 = h
+35159 = to hi
+28244 = to hi
 */
 
-//checkReaddatei();
+checkReaddatei();
  
