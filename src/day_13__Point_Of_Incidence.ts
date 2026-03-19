@@ -4,6 +4,7 @@ import * as readline from 'readline';
 /*
  * https://adventofcode.com/2023/day/13
  * 
+ * 
  *      012345678
  *   0  #.##..##.
  *   1  ..#.##.#.
@@ -13,43 +14,37 @@ import * as readline from 'readline';
  *   5  ..##..##.
  *   6  #.#.##.#.
  * 
- * Row    0 180
- * Row    1 180
- * Row    2 90
- * Row    3 90
- * Row    4 180
- * Row    5 180
- * Row    6 180
+ * Row Nr    1  Index    0  Hash   180  Diff     0
+ * Row Nr    2  Index    1  Hash   180  Diff    90
+ * Row Nr    3  Index    2  Hash    90  Diff     0
+ * Row Nr    4  Index    3  Hash    90  Diff   -90
+ * Row Nr    5  Index    4  Hash   180  Diff     0
+ * Row Nr    6  Index    5  Hash   180  Diff     0
+ * Row Nr    7  Index    6  Hash   180  Diff   180
  * 
- * Col    0 110
- * Col    1 50
- * Col    2 160
- * Col    3 50
- * Col    4 110
- * Col    5 110
- * Col    6 50
- * Col    7 160
- * Col    8 50
+ * Col Nr    1  Index    0  Hash   110  Diff    60
+ * Col Nr    2  Index    1  Hash    50  Diff  -110
+ * Col Nr    3  Index    2  Hash   160  Diff   110
+ * Col Nr    4  Index    3  Hash    50  Diff   -60
+ * Col Nr    5  Index    4  Hash   110  Diff     0
+ * Col Nr    6  Index    5  Hash   110  Diff    60
+ * Col Nr    7  Index    6  Hash    50  Diff  -110
+ * Col Nr    8  Index    7  Hash   160  Diff   110
+ * Col Nr    9  Index    8  Hash    50  Diff    50
  * 
  * 
- * Row
- * 180,180,90,90,180,180,180
- * 0,90,0,-90,0,0,180
+ * Row Index   0 Steps   1   Max Index   0 Steps   1
+ * Row Index   2 Steps   3   Max Index   2 Steps   3
+ * Row Index   4 Steps   1   Max Index   2 Steps   3
+ * Row Index   5 Steps   1   Max Index   2 Steps   3
+ * Col Index   4 Steps   4   Max Index   4 Steps   4
  * 
- * Col
- * 110,50,160,50,110,110,50,160,50
- * 60,-110,110,-60,0,60,-110,110,50
- * 
- * ------- 0  1   = max 0  1
- * ------- 2  3   = max 2  3
- * ------- 4  1   = max 2  3
- * ------- 5  1   = max 2  3
- * ------- 4  4   = max 4  4
- *  Ergebnis  4  4
+ * Ergebnis Index 4 Step 4
  * 
  * 
  * result_x = 5
  * 
+ * ------------------------------------------------------------------
  * 
  *      012345678
  *   0  #...##..#
@@ -60,42 +55,106 @@ import * as readline from 'readline';
  *   5  ..##..###
  *   6  #....#..#
  * 
- * Row    0 170
- * Row    1 130
- * Row    2 260
- * Row    3 230
- * Row    4 230
- * Row    5 260
- * Row    6 130
+ * Row Nr    1  Index    0  Hash   170  Diff    40
+ * Row Nr    2  Index    1  Hash   130  Diff  -130
+ * Row Nr    3  Index    2  Hash   260  Diff    30
+ * Row Nr    4  Index    3  Hash   230  Diff     0
+ * Row Nr    5  Index    4  Hash   230  Diff   -30
+ * Row Nr    6  Index    5  Hash   260  Diff   130
+ * Row Nr    7  Index    6  Hash   130  Diff   130
  * 
- * Col    0 140
- * Col    1 70
- * Col    2 140
- * Col    3 140
- * Col    4 70
- * Col    5 70
- * Col    6 140
- * Col    7 140
- * Col    8 140
+ * Col Nr    1  Index    0  Hash   140  Diff    70
+ * Col Nr    2  Index    1  Hash    70  Diff   -70
+ * Col Nr    3  Index    2  Hash   140  Diff     0
+ * Col Nr    4  Index    3  Hash   140  Diff    70
+ * Col Nr    5  Index    4  Hash    70  Diff     0
+ * Col Nr    6  Index    5  Hash    70  Diff   -70
+ * Col Nr    7  Index    6  Hash   140  Diff     0
+ * Col Nr    8  Index    7  Hash   140  Diff     0
+ * Col Nr    9  Index    8  Hash   140  Diff   140
  * 
  * 
- * Row
- * 170,130,260,230,230,260,130
- * 40,-130,30,0,-30,130,130
+ * Row Index   3 Steps   3   Max Index   3 Steps   3
+ * Col Index   2 Steps   2   Max Index   3 Steps   3
+ * Col Index   4 Steps   3   Max Index   4 Steps   3
+ * Col Index   6 Steps   1   Max Index   4 Steps   3
+ * Col Index   7 Steps   1   Max Index   4 Steps   3
  * 
- * Col
- * 140,70,140,140,70,70,140,140,140
- * 70,-70,0,70,0,-70,0,0,140
- * 
- * ------- 3  3   = max 3  3
- * ------- 2  2   = max 3  3
- * ------- 4  3   = max 4  3
- * ------- 6  1   = max 4  3
- * ------- 7  1   = max 4  3
- *  Ergebnis  3  3
+ * Ergebnis Index 3 Step 3
  * 
  * 
  * result_x = 400
+ * 
+ * ------------------------------------------------------------------
+ * 
+ *      012345678901234
+ *   0  ###############
+ *   1  .....#.####.#..
+ *   2  .....#.####.#..
+ *   3  ##############.
+ *   4  #############..
+ *   5  #####.##.####..
+ *   6  ######.###.#..#
+ *   7  .....#.####.#..
+ *   8  .....#.####.#..
+ *   9  ######.###.##.#
+ *  10  .###..#.#....##
+ *  11  .###..#.#....##
+ *  12  ######.###.##.#
+ *  13  .....#.####.#..
+ *  14  .....#.####.#..
+ *  15  ######.###.#..#
+ *  16  ############...
+ *  17  ###########....
+ * 
+ * Row Nr    1  Index    0  Hash  1050  Diff   540
+ * Row Nr    2  Index    1  Hash   510  Diff     0
+ * Row Nr    3  Index    2  Hash   510  Diff  -400
+ * Row Nr    4  Index    3  Hash   910  Diff   130
+ * Row Nr    5  Index    4  Hash   780  Diff   130
+ * Row Nr    6  Index    5  Hash   650  Diff    10
+ * Row Nr    7  Index    6  Hash   640  Diff   130
+ * Row Nr    8  Index    7  Hash   510  Diff     0
+ * Row Nr    9  Index    8  Hash   510  Diff  -250
+ * Row Nr   10  Index    9  Hash   760  Diff   290
+ * Row Nr   11  Index   10  Hash   470  Diff     0
+ * Row Nr   12  Index   11  Hash   470  Diff  -290
+ * Row Nr   13  Index   12  Hash   760  Diff   250
+ * Row Nr   14  Index   13  Hash   510  Diff     0
+ * Row Nr   15  Index   14  Hash   510  Diff  -130
+ * Row Nr   16  Index   15  Hash   640  Diff   -20
+ * Row Nr   17  Index   16  Hash   660  Diff   110
+ * Row Nr   18  Index   17  Hash   550  Diff   550
+ * 
+ * Col Nr    1  Index    0  Hash   390  Diff  -210
+ * Col Nr    2  Index    1  Hash   600  Diff     0
+ * Col Nr    3  Index    2  Hash   600  Diff     0
+ * Col Nr    4  Index    3  Hash   600  Diff   210
+ * Col Nr    5  Index    4  Hash   390  Diff  -400
+ * Col Nr    6  Index    5  Hash   790  Diff   460
+ * Col Nr    7  Index    6  Hash   330  Diff  -510
+ * Col Nr    8  Index    7  Hash   840  Diff  -160
+ * Col Nr    9  Index    8  Hash  1000  Diff   160
+ * Col Nr   10  Index    9  Hash   840  Diff   270
+ * Col Nr   11  Index   10  Hash   570  Diff   180
+ * Col Nr   12  Index   11  Hash   390  Diff  -390
+ * Col Nr   13  Index   12  Hash   780  Diff   540
+ * Col Nr   14  Index   13  Hash   240  Diff  -240
+ * Col Nr   15  Index   14  Hash   480  Diff   480
+ * 
+ * 
+ * Row Index   1 Steps   1   Max Index   1 Steps   1
+ * Row Index   7 Steps   1   Max Index   1 Steps   1
+ * Row Index  10 Steps   5   Max Index  10 Steps   5
+ * Row Index  13 Steps   1   Max Index  10 Steps   5
+ * Col Index   1 Steps   1   Max Index  10 Steps   5
+ * Col Index   2 Steps   1   Max Index  10 Steps   5
+ * 
+ * Ergebnis Index 10 Step 5
+ * 
+ * 
+ * result_x = 1100
+ * 
  */
 
 type PropertieMap = Record< string, string >;
@@ -103,8 +162,6 @@ type PropertieMap = Record< string, string >;
 const CHAR_MAP_MIRROR : string = "#";
 const CHAR_MAP_LAVA   : string = ".";
 const CHAR_NOT_MAP    : string = "X";
-
-const STR_COMBINE_SPACER                 : string = "   "; 
 
 let file_string   : string = "";
 let file_nr       : number = 0;
@@ -284,31 +341,11 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
     for ( let row_n : number = 0; row_n < pMapRows; row_n++ )
     {
         hash_vektor_row[ row_n ] = calcRowHash( pMap, pMapCols, row_n );
-
-        if ( pKnzDebug )
-        {
-            wl( "Row " + pad( row_n, 4 ) + " " + hash_vektor_row[ row_n ] );
-        }
-    }
-
-    if ( pKnzDebug )
-    {
-        wl( "" )
     }
 
     for ( let col_n : number = 0; col_n < pMapCols; col_n++ )
     {
         hash_vektor_col[ col_n ] = calcColHash( pMap, pMapCols, col_n );
-
-        if ( pKnzDebug )
-        {
-            wl( "Col " + pad( col_n, 4 ) + " " + hash_vektor_col[ col_n ] );
-        }
-    }
-
-    if ( pKnzDebug )
-    {
-        wl( "" )
     }
 
     /*
@@ -329,16 +366,27 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
         diff_col[ index_b ] = hash_vektor_col[ index_b ]! - hash_vektor_col[ index_b + 1 ]!;
     }
 
+    /*
+     * *******************************************************************************************************
+     * Writing Debug-Info 
+     * *******************************************************************************************************
+     */
+
     if ( pKnzDebug )
     {
+        for ( let row_n : number = 0; row_n < pMapRows; row_n++ )
+        {
+            wl( "Row Nr " + pad( ( row_n + 1 ), 4 ) + "  Index " + pad( row_n, 4 ) + "  Hash " + pad( "" + hash_vektor_row[ row_n ], 5 ) + "  Diff " + pad( "" + diff_row[ row_n ], 5 ) );
+        }
+
         wl( "" );
-        wl( "Row" );
-        wl( hash_vektor_row.toString() );
-        wl( diff_row.toString() );
+
+        for ( let col_n : number = 0; col_n < pMapCols; col_n++ )
+        {
+            wl( "Col Nr " + pad( ( col_n + 1 ), 4 ) + "  Index " + pad( col_n, 4 ) + "  Hash " + pad( "" + hash_vektor_col[ col_n ], 5 ) + "  Diff " + pad( "" + diff_col[ col_n ], 5 ) );
+        }
+
         wl( "" );
-        wl( "Col" );
-        wl( hash_vektor_col.toString() );
-        wl( diff_col.toString() );
         wl( "" );
     }
 
@@ -366,7 +414,7 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
                 max_start_index_0 = index_b;
             }
 
-            wl( "------- " + index_b + "  " + cur_step_count + "   = max " +  max_start_index_0  + "  " + max_step_count );            
+            wl( "Row Index " + pad( index_b, 3 ) + " Steps " + pad( cur_step_count, 3 ) + "   Max Index " + pad( max_start_index_0, 3 )  + " Steps " + pad( max_step_count, 3 )  );
         }
     }
 
@@ -394,7 +442,7 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
                 max_start_index_0 = index_b;
             }
 
-            wl( "------- " + index_b + "  " + cur_step_count + "   = max " +  max_start_index_0  + "  " + max_step_count );            
+            wl( "Col Index " + pad( index_b, 3 )  + " Steps " + pad( cur_step_count, 3 ) + "   Max Index " + pad( max_start_index_0, 3 )  + " Steps " + pad( max_step_count, 3 )  );
         }
     }
 
@@ -422,7 +470,8 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
 
     if ( max_total_step_count > 1 )
     {
-        wl( " Ergebnis  " + max_total_start_index_0  + "  " + max_total_step_count );
+        wl( "" );
+        wl( "Ergebnis Index " + max_total_start_index_0  + " Step " + max_total_step_count );
         wl( "" );
 
         if ( knz_mirror_col )
@@ -532,7 +581,7 @@ function checkReaddatei(): void
 
         const arrFromFile = await readFileLines();
 
-        calcArray( arrFromFile, false );
+        calcArray( arrFromFile, true );
     } )();
 }
 
@@ -595,7 +644,7 @@ function getTestArray2(): string[]
 
 wl( "Day 13 - Point of Incidence" );
 
-calcArray( getTestArray1());
+calcArray( getTestArray2());
 
 /*
 1111 = tl
@@ -603,5 +652,5 @@ calcArray( getTestArray1());
 28244 = to hi
 */
 
-checkReaddatei();
+//checkReaddatei();
  
