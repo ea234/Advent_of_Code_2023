@@ -4,7 +4,100 @@ import * as readline from 'readline';
 /*
  * https://adventofcode.com/2023/day/13
  * 
-*/
+ * 
+ *      012345678
+ *   0  #.##..##.
+ *   1  ..#.##.#.
+ *   2  ##......#
+ *   3  ##......#
+ *   4  ..#.##.#.
+ *   5  ..##..##.
+ *   6  #.#.##.#.
+ * 
+ * Row    0 180
+ * Row    1 180
+ * Row    2 90
+ * Row    3 90
+ * Row    4 180
+ * Row    5 180
+ * Row    6 180
+ * 
+ * Col    0 110
+ * Col    1 50
+ * Col    2 160
+ * Col    3 50
+ * Col    4 110
+ * Col    5 110
+ * Col    6 50
+ * Col    7 160
+ * Col    8 50
+ * 
+ * 
+ * Row
+ * 180,180,90,90,180,180,180
+ * 0,90,0,-90,0,0,180
+ * 
+ * Col
+ * 110,50,160,50,110,110,50,160,50
+ * 60,-110,110,-60,0,60,-110,110,50
+ * 
+ * ------- 0  1   = max 0  1
+ * ------- 2  3   = max 2  3
+ * ------- 4  1   = max 2  3
+ * ------- 5  1   = max 2  3
+ * ------- 4  4   = max 4  4
+ *  Ergebnis  4  4
+ * 
+ * 
+ * result_x = 5
+ * 
+ * 
+ *      012345678
+ *   0  #...##..#
+ *   1  #....#..#
+ *   2  ..##..###
+ *   3  #####.##.
+ *   4  #####.##.
+ *   5  ..##..###
+ *   6  #....#..#
+ * 
+ * Row    0 170
+ * Row    1 130
+ * Row    2 260
+ * Row    3 230
+ * Row    4 230
+ * Row    5 260
+ * Row    6 130
+ * 
+ * Col    0 140
+ * Col    1 70
+ * Col    2 140
+ * Col    3 140
+ * Col    4 70
+ * Col    5 70
+ * Col    6 140
+ * Col    7 140
+ * Col    8 140
+ * 
+ * 
+ * Row
+ * 170,130,260,230,230,260,130
+ * 40,-130,30,0,-30,130,130
+ * 
+ * Col
+ * 140,70,140,140,70,70,140,140,140
+ * 70,-70,0,70,0,-70,0,0,140
+ * 
+ * ------- 3  3   = max 3  3
+ * ------- 2  2   = max 3  3
+ * ------- 4  3   = max 4  3
+ * ------- 6  1   = max 4  3
+ * ------- 7  1   = max 4  3
+ *  Ergebnis  3  3
+ * 
+ * 
+ * result_x = 400
+ */
 
 type PropertieMap = Record< string, string >;
 
@@ -23,6 +116,7 @@ function wl( pString : string )
 
     file_string +="\n" + pString;
 }
+
 
 function writeFile( pFileName: string, pFileData: string ): void 
 {
@@ -62,6 +156,7 @@ function strReplace(pText : string, pSearchText : string, pReplaceText : string 
     // only match at word boundaries
     return pText.replaceAll( new RegExp(`${ pSearchText}`, "g"),  pReplaceText );
 }
+
 
 function pad( pInput : string | number, pPadLeft : number ) : string 
 {
@@ -116,7 +211,6 @@ function getDebugMap( pHashMap : PropertieMap, pMaxRows : number, pMaxCols : num
 
     return str_result;
 }
-
 
 
 function createMapX( pHashMap : PropertieMap, pMaxRows : number, pMaxCols : number  ): string 
@@ -211,14 +305,11 @@ function getMirrorSteps( pVektor : number[], pStartIndex : number ): number
 
 function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, pKnzDebug : boolean ) : number
 {
-
     file_string = "";
 
     if ( pKnzDebug )
     {
-        let str_map_debug = getDebugMap(  pMap, pMapRows, pMapCols );
-
-        wl( str_map_debug );
+        wl( getDebugMap(  pMap, pMapRows, pMapCols ) );
     }
 
     let hash_vektor_row : number[] = [];
@@ -364,7 +455,7 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
     wl( "" );
     wl( "" );
 
-    //writeFile( "/home/ea234/typescript/temp_day13/testfall_"+ file_nr + ".txt", file_string );
+    writeFile( "/home/ea234/typescript/temp_day13/testfall_"+ file_nr + ".txt", file_string );
 
     file_string = "";
 
@@ -512,13 +603,12 @@ function getTestArray2(): string[]
 
 wl( "Day 13 - Point of Incidence" );
 
-//calcArray( getTestArray1());
+calcArray( getTestArray1());
 
 /*
 1111 = tl
-35159 = to hi
-28244 = to hi
+28244 = h
 */
 
-checkReaddatei();
+//checkReaddatei();
  
