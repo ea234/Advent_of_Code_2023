@@ -4,6 +4,8 @@ import * as readline from 'readline';
 /*
  * https://adventofcode.com/2023/day/13
  * 
+ * https://www.reddit.com/r/adventofcode/comments/18h940b/2023_day_13_solutions/
+ * 
  *      012345678
  *   0  #.##..##.
  *   1  ..#.##.#.
@@ -342,7 +344,7 @@ function getDebugCol( pMap : PropertieMap, pMapRows : number, pCol : number ) : 
 
 function calcHashValueBinFromRow( pMap : PropertieMap, pMapCols : number, pRow1 : number ) : number 
 {
-    let hash_wert = 1; // return value must not be 0
+    let hash_wert : number = 1; // return value must not be 0
 
     let bin_val : number = 2;
 
@@ -362,7 +364,7 @@ function calcHashValueBinFromRow( pMap : PropertieMap, pMapCols : number, pRow1 
 
 function calcHashValueBinFromCol( pMap : PropertieMap, pMapRows : number, pCol : number ) : number 
 {
-    let hash_wert = 1; // return value must not be 0
+    let hash_wert : number = 1; // return value must not be 0
 
     let bin_val : number = 2;
 
@@ -384,8 +386,8 @@ function getMirrorSteps( pVektor : number[], pStartIndex : number ): number
 {
     let step_count : number = 0;
 
-    let index_a = pStartIndex;
-    let index_b = pStartIndex + 1;
+    let index_a : number = pStartIndex;
+    let index_b : number = pStartIndex + 1;
 
     while ( ( index_a >= 0 ) && ( index_b < pVektor.length ) && ( pVektor[ index_a ] === pVektor[ index_b ]) )
     {
@@ -476,11 +478,11 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
      * For every 0 difference, calculate the steps in the mirrord hash-values (Rows)
      * *******************************************************************************************************
      */
-    let max_total_step_count    : number = 0;
+    let max_total_step_count    : number =  0;
     let max_total_start_index_0 : number = -1;
     let max_start_index_0       : number = -1;
-    let max_step_count          : number = 0;
-    let cur_step_count          : number = 0;
+    let max_step_count          : number =  0;
+    let cur_step_count          : number =  0;
 
     for ( let index_row : number = 0; index_row < ( hash_vektor_row.length - 1 ); index_row++ )
     {
@@ -501,7 +503,7 @@ function checkGrid( pMap : PropertieMap, pMapRows : number, pMapCols : number, p
 
     if ( max_step_count > max_total_step_count )
     {
-        max_total_step_count = max_step_count;
+        max_total_step_count    = max_step_count;
         max_total_start_index_0 = max_start_index_0;
     }
     
@@ -764,9 +766,9 @@ function getTestArray3(): string[]
 
 wl( "Day 13 - Point of Incidence" );
 
-calcArray( getTestArray1());
-calcArray( getTestArray2());
-calcArray( getTestArray3());
+calcArray( getTestArray1() );
+calcArray( getTestArray2() );
+calcArray( getTestArray3() );
 
 /*
 1111 = tl
