@@ -20,6 +20,7 @@ let file_string   : string = "";
 let file_nr       : number = 0;
 let file_write_on : boolean = false;
 
+let KNZ_DEBUG : boolean = false;
 
 function wl( pString : string )
 {
@@ -159,11 +160,9 @@ function toNorth( map_input : PropertieMap, grid_rows : number, grid_cols : numb
 
                     let cur_char_search : string = map_input[ cur_key_search ] ?? CHAR_NOT_MAP;
 
-                    wl( "Free " + row_index_free + " " + cur_key_free + " " + cur_char_free  + " - Search  " + row_search + "  " + cur_key_search + " " + cur_char_search + " ");
-
-                    if ( cur_key_search === "R9C0")
+                    if ( KNZ_DEBUG )
                     {
-                            wl( getDebugMap( map_input, grid_rows, grid_cols ) );
+                      wl( "Free " + row_index_free + " " + cur_key_free + " " + cur_char_free  + " - Search  " + row_search + "  " + cur_key_search + " " + cur_char_search + " ");
                     }
 
                     if ( cur_char_search === CHAR_MAP_ROUNDED_ROCK )
@@ -198,12 +197,6 @@ function toNorth( map_input : PropertieMap, grid_rows : number, grid_cols : numb
         }
     }
 }
-
-
-
-
-
-
 
 
 function toSouth( map_input : PropertieMap, grid_rows : number, grid_cols : number )
@@ -246,7 +239,10 @@ function toSouth( map_input : PropertieMap, grid_rows : number, grid_cols : numb
 
                     let cur_char_search : string = map_input[ cur_key_search ] ?? CHAR_NOT_MAP;
 
-                    wl( "Free " + row_index_free + " " + cur_key_free + " " + cur_char_free  + " - Search  " + row_search + "  " + cur_key_search + " " + cur_char_search + " ");
+                    if ( KNZ_DEBUG )
+                    {
+                        wl( "Free " + row_index_free + " " + cur_key_free + " " + cur_char_free  + " - Search  " + row_search + "  " + cur_key_search + " " + cur_char_search + " ");
+                    }
 
                     if ( cur_key_search === "R9C0")
                     {
@@ -285,6 +281,177 @@ function toSouth( map_input : PropertieMap, grid_rows : number, grid_cols : numb
         }
     }
 }
+
+
+
+
+
+
+
+function toEast( map_input : PropertieMap, grid_rows : number, grid_cols : number )
+{
+    for ( let cur_row = 0; cur_row < grid_rows; cur_row++ )
+    {
+        let col_index_free : number = grid_cols - 1;
+        let col_search     : number = grid_cols - 1;
+
+        while ( ( col_index_free >= 0 ) && ( col_search >= 0 ) )
+        {
+            let cur_key_free  : string = "R" + cur_row + "C" + col_index_free;
+
+            let cur_char_free : string = map_input[ cur_key_free ] ?? CHAR_NOT_MAP;
+
+            if ( cur_char_free === CHAR_MAP_ROUNDED_ROCK )
+            {
+                // found round rock, on free position 
+                // no further action
+                //
+                // Rock is OK on this position
+            }
+            else if ( cur_char_free === CHAR_MAP_CUBED_ROCK )
+            {
+                // found cubed rock
+                // no further action
+                //
+                // Rock cant be moved
+            }
+            else if ( cur_char_free === CHAR_MAP_SPACE )
+            {
+                col_search = col_index_free - 1;
+
+                let knz_while_loop : boolean = true;
+
+
+                while ( knz_while_loop ) 
+                {
+                    let cur_key_search  : string = "R" + cur_row  + "C" + col_search;
+
+                    let cur_char_search : string = map_input[ cur_key_search ] ?? CHAR_NOT_MAP;
+
+                    if ( KNZ_DEBUG )
+                    {
+                        wl( "Free " + col_index_free + " " + cur_key_free + " " + cur_char_free  + " - Search  " + col_search + "  " + cur_key_search + " " + cur_char_search + " ");
+                    }
+
+                    if ( cur_char_search === CHAR_MAP_ROUNDED_ROCK )
+                    {
+                        map_input[ cur_key_free   ] = CHAR_MAP_ROUNDED_ROCK;
+                        map_input[ cur_key_search ] = CHAR_MAP_SPACE;
+
+                        knz_while_loop = false;
+                    }
+                    else if ( cur_char_search === CHAR_MAP_CUBED_ROCK )
+                    {
+                        col_index_free = col_search;
+
+                        knz_while_loop = false;
+                    }
+                    else if ( cur_char_search === CHAR_NOT_MAP )
+                    {
+                        col_index_free = col_search;
+
+                        knz_while_loop = false;
+                    }
+                    else
+                    {
+                        col_search--;
+
+                        knz_while_loop = ( ( col_index_free >= 0 ) && ( col_search >= 0 ) );
+                    }
+                }
+            }
+
+            col_index_free--;
+        }
+    }
+}
+
+
+
+
+
+
+
+function toWest( map_input : PropertieMap, grid_rows : number, grid_cols : number )
+{
+    for ( let cur_row = 0; cur_row < grid_rows; cur_row++ )
+    {
+        let col_index_free : number = 0;
+        let col_search     : number = 0;
+
+        while ( ( col_index_free < grid_cols ) && ( col_search < grid_cols ) )
+        {
+            let cur_key_free  : string = "R" + cur_row + "C" + col_index_free;
+
+            let cur_char_free : string = map_input[ cur_key_free ] ?? CHAR_NOT_MAP;
+
+            if ( cur_char_free === CHAR_MAP_ROUNDED_ROCK )
+            {
+                // found round rock, on free position 
+                // no further action
+                //
+                // Rock is OK on this position
+            }
+            else if ( cur_char_free === CHAR_MAP_CUBED_ROCK )
+            {
+                // found cubed rock
+                // no further action
+                //
+                // Rock cant be moved
+            }
+            else if ( cur_char_free === CHAR_MAP_SPACE )
+            {
+                col_search = col_index_free + 1;
+
+                let knz_while_loop : boolean = true;
+
+
+                while ( knz_while_loop ) 
+                {
+                    let cur_key_search  : string = "R" + cur_row  + "C" + col_search;
+
+                    let cur_char_search : string = map_input[ cur_key_search ] ?? CHAR_NOT_MAP;
+
+                    if ( KNZ_DEBUG )
+                    {
+                        wl( "Free " + col_index_free + " " + cur_key_free + " " + cur_char_free  + " - Search  " + col_search + "  " + cur_key_search + " " + cur_char_search + " ");
+                    }
+
+                    if ( cur_char_search === CHAR_MAP_ROUNDED_ROCK )
+                    {
+                        map_input[ cur_key_free   ] = CHAR_MAP_ROUNDED_ROCK;
+                        map_input[ cur_key_search ] = CHAR_MAP_SPACE;
+
+                        knz_while_loop = false;
+                    }
+                    else if ( cur_char_search === CHAR_MAP_CUBED_ROCK )
+                    {
+                        col_index_free = col_search;
+
+                        knz_while_loop = false;
+                    }
+                    else if ( cur_char_search === CHAR_NOT_MAP )
+                    {
+                        col_index_free = col_search;
+
+                        knz_while_loop = false;
+                    }
+                    else
+                    {
+                        col_search++;
+
+                        knz_while_loop = ( ( col_index_free < grid_cols ) && ( col_search < grid_cols ) );
+                    }
+                }
+            }
+
+            col_index_free++;
+        }
+    }
+}
+
+
+
 
 function calcArray( pArray: string[], pKnzDebug : boolean = true ): void 
 {
@@ -329,8 +496,28 @@ function calcArray( pArray: string[], pKnzDebug : boolean = true ): void
      * *******************************************************************************************************
      */
 
+    const start_date = new Date();
+
+    let nr_togo = 0;
+
     toNorth( map_input, grid_rows, grid_cols );
 
+    /*
+     * Test Part 2 the hard way ... not suitable
+     */
+    // for ( let iteration_nr = 0; iteration_nr < 1_000_000_000; iteration_nr++)
+    // for ( let iteration_nr = 0; iteration_nr < 40_000; iteration_nr++)
+    // {
+    //     const now = new Date();
+    //     console.log( "Iteration Nr " + iteration_nr + " " + now.toISOString() );
+    //
+    //     toNorth( map_input, grid_rows, grid_cols );
+    //     toWest( map_input, grid_rows, grid_cols );
+    //     toSouth( map_input, grid_rows, grid_cols );
+    //     toEast( map_input, grid_rows, grid_cols );
+    // }
+
+    console.log( "start " + start_date.toISOString() );
 
     /*
      * *******************************************************************************************************
@@ -437,10 +624,10 @@ function getTestArray1(): string[]
 
 wl( "Day 14 - Parabolic Reflector Dish" );
 
-//calcArray( getTestArray1() );
+calcArray( getTestArray1() );
 
 /*
 */
 
-checkReaddatei();
+//checkReaddatei();
  
