@@ -65,7 +65,7 @@ class Lens
         this.m_focal_length = pFocalLength; 
     }
 
-    public getLabel() 
+    public getLabel() : string
     {
         return this.m_label;
     }
