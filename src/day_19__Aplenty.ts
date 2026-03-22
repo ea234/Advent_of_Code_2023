@@ -4,15 +4,85 @@ import * as readline from 'readline';
 /*
  * https://adventofcode.com/2023/day/19
  * 
+ * https://www.reddit.com/r/adventofcode/comments/18ltr8m/2023_day_19_solutions/
  * 
+ * /home/ea234/.nvm/versions/node/v20.16.0/bin/node ./dist/day19/day_19__Aplenty.js
+ * Day 19 - Aplenty
+ * Items
+ *   x_val 787  m_val 2655  a_val 1222  s_val 2876
+ *   x_val 1679  m_val 44  a_val 2067  s_val 496
+ *   x_val 2036  m_val 264  a_val 79  s_val 2244
+ *   x_val 2461  m_val 1339  a_val 466  s_val 291
+ *   x_val 2127  m_val 1623  a_val 2188  s_val 1013
+ * 
+ * Rules
+ * px
+ * Field a OP < Nr 2006 = qkq
+ * Field m OP > Nr 2090 = A
+ * else rfg
+ * 
+ * pv
+ * Field a OP > Nr 1716 = R
+ * else A
+ * 
+ * lnx
+ * Field m OP > Nr 1548 = A
+ * else A
+ * 
+ * rfg
+ * Field s OP < Nr 537 = gd
+ * Field x OP > Nr 2440 = R
+ * else A
+ * 
+ * qs
+ * Field s OP > Nr 3448 = A
+ * else lnx
+ * 
+ * qkq
+ * Field x OP < Nr 1416 = A
+ * else crn
+ * 
+ * crn
+ * Field x OP > Nr 2662 = A
+ * else R
+ * 
+ * in
+ * Field s OP < Nr 1351 = px
+ * else qqz
+ * 
+ * qqz
+ * Field s OP > Nr 2770 = qs
+ * Field m OP < Nr 1801 = hdj
+ * else R
+ * 
+ * gd
+ * Field a OP > Nr 3333 = R
+ * else R
+ * 
+ * hdj
+ * Field m OP > Nr 838 = A
+ * else pv
+ * 
+ *   x_val 787  m_val 2655  a_val 1222  s_val 2876  in -> qqz -> qs -> lnx -> A
+ * 
+ *   x_val 1679  m_val 44  a_val 2067  s_val 496  in -> px -> rfg -> gd -> R
+ * 
+ *   x_val 2036  m_val 264  a_val 79  s_val 2244  in -> qqz -> hdj -> pv -> A
+ * 
+ *   x_val 2461  m_val 1339  a_val 466  s_val 291  in -> px -> qkq -> crn -> R
+ * 
+ *   x_val 2127  m_val 1623  a_val 2188  s_val 1013  in -> px -> rfg -> A
+ * 
+ * Result Part 1 = 19114
+ * Result Part 2 = 0
  * 
  */
 
 
 type RuleParsed = {
-  item_field : string;   
-  operator : "<" | ">" | "=" | null;
-  item_number : number | null;
+  item_field       : string;   
+  operator         : "<" | ">" | "=" | null;
+  check_value      : number | null;
   id_workflow_next : string;  
 };
 
@@ -23,7 +93,7 @@ function parseInput( pInput : string) : RuleParsed | null
 
     let operator: "<" | ">" | "=" | null = null;
     
-    let item_number: number | null = null;
+    let check_value: number | null = null;
 
     let ref_id_workflow = "";
 
@@ -37,9 +107,9 @@ function parseInput( pInput : string) : RuleParsed | null
 
         operator = pInput[ opperator_index ] as "<" | ">" | "=";
 
-        let numStr = pInput.substring( opperator_index + 1, number_seperator );
+        let str_value = pInput.substring( opperator_index + 1, number_seperator );
 
-        item_number = numStr.length > 0 ? Number(numStr) : null;
+        check_value = str_value.length > 0 ? Number( str_value ) : null;
 
         ref_id_workflow = pInput.substring( number_seperator + 1 );
     } 
@@ -48,7 +118,7 @@ function parseInput( pInput : string) : RuleParsed | null
         return null;
     }
 
-    return { item_field: item_field, operator, item_number: item_number, id_workflow_next: ref_id_workflow };
+    return { item_field: item_field, operator, check_value: check_value, id_workflow_next: ref_id_workflow };
 }
 
 
@@ -80,46 +150,6 @@ class Item
         this.s_val = getNumber( pInput, s_pos + 3, e_pos );
     }
 
-    // public getXVal() : number
-    // {
-    //     return this.x_val;
-    // }
-
-    // public setXVal( pXVal : number)
-    // {
-    //     this.x_val = pXVal;
-    // }
-
-    // public getMVal() : number
-    // {
-    //     return this.m_val;
-    // }
-
-    // public setMVal( pMVal : number )
-    // {
-    //     this.m_val = pMVal;
-    // }
-
-    // public getAVal() : number
-    // {
-    //     return this.a_val;
-    // }
-
-    // public setAVal( pAVal : number )
-    // {
-    //     this.a_val = pAVal;
-    // }
-
-    // public getSVal() : number
-    // {
-    //     return this.s_val;
-    // }
-
-    // public setSVal( pSVal : number )
-    // {
-    //     this.s_val = pSVal;
-    // }
-
     public getField( pFieldID : string ) : number 
     {
         if ( pFieldID === "x" ) return this.x_val;
@@ -131,6 +161,11 @@ class Item
         return this.s_val;
     }
 
+    public getValueAll() : number
+    {
+        return this.x_val + this.m_val + this.a_val + this.s_val;
+    }
+
     public toString() : string 
     {
         return  "  x_val " + this.x_val + "  m_val " + this.m_val + "  a_val " + this.a_val + "  s_val " + this.s_val;
@@ -140,25 +175,52 @@ class Item
 
 class Rule 
 {
-    field : string;
-    op    : string;
-    nr    : number;
-    id_wf : string 
+    item_field   : string;
+    op           : string;
+    check_value  : number;
+    wf_id_result : string 
 
     constructor( pInput : RuleParsed )
     {
-        this.field = pInput.item_field;
+        this.item_field = pInput.item_field;
 
-        this.nr = pInput.item_number!;
+        this.check_value = pInput.check_value!;
 
         this.op = pInput.operator!;
 
-        this.id_wf = pInput.id_workflow_next;
+        this.wf_id_result = pInput.id_workflow_next;
+    }
+
+    public checkItem( pItem : Item ) : string | null
+    {
+        let item_field_value = pItem.getField( this.item_field );
+
+        let knz_rule_applies : boolean = false;
+
+        if ( this.op === "<" )
+        {
+            knz_rule_applies = item_field_value < this.check_value;
+        }
+        else if ( this.op === ">" )
+        {
+            knz_rule_applies = item_field_value > this.check_value;
+        }
+        else if ( this.op === "=" )
+        {
+            knz_rule_applies = item_field_value === this.check_value;
+        }
+
+        if ( knz_rule_applies )
+        {
+            return this.wf_id_result;
+        }
+
+        return null;
     }
 
     public toString() : string 
     {
-        return "Field " + this.field + " OP " + this.op + " Nr " + this.nr + " = " + this.id_wf;
+        return "Field " + this.item_field + " OP " + this.op + " Nr " + this.check_value + " = " + this.wf_id_result;
     }
 }
 
@@ -172,7 +234,7 @@ class Workflow
     constructor( input : string )
     {
         const index_rule_start = input.indexOf( "{" );
-        const index_rule_end  = input.indexOf( "}" );
+        const index_rule_end   = input.indexOf( "}" );
 
         this.wf_name = input.substring( 0, index_rule_start );
 
@@ -195,20 +257,45 @@ class Workflow
         }
     }
 
-    public toString() : string 
+    public checkItem( pItem : Item ) : string 
     {
-        let str_r : string = "";
-
-        str_r += this.wf_name + "\n";
-
-        for ( const rrr of this.wf_rules )
+        for ( const cur_rule of this.wf_rules )
         {
-          str_r += rrr.toString() + "\n";
+            let cur_id_wf = cur_rule.checkItem( pItem );
+
+            if ( cur_id_wf !== null )
+            {
+                return cur_id_wf;
+            }
         }
 
-        str_r += "else " +  this.wf_else + "\n";
+        return this.wf_else;
+    }
 
-        return str_r;
+    public getWorkflowID() : string 
+    {
+        return this.wf_name;
+    }
+
+    public isWorkflowID( pName : string ) : boolean
+    {
+        return this.wf_name === pName;
+    }
+
+    public toString() : string 
+    {
+        let str_result : string = "";
+
+        str_result += this.wf_name + "\n";
+
+        for ( const rule_inst of this.wf_rules )
+        {
+          str_result += rule_inst.toString() + "\n";
+        }
+
+        str_result += "else " + this.wf_else + "\n";
+
+        return str_result;
     }
 }
 
@@ -219,33 +306,12 @@ function wl( pString : string )
 }
 
 
-function writeFile( pFileName: string, pFileData: string ): void 
-{
-    fs.writeFile( pFileName, pFileData, { flag: "w" } );
-
-    console.log( "File created!" );
-}
-
-
-function pad( pInput : string | number, pPadLeft : number ) : string 
-{
-    let str_result : string = pInput.toString();
-
-    while ( str_result.length < pPadLeft )
-    { 
-        str_result = " " + str_result;
-    }
-
-    return str_result;
-}
-
-
 function calcArray( pArray: string[], pKnzDebug : boolean = true ): void 
 {
     let vektor_workflow : Workflow[] = [];
     let vektor_items    : Item[]     = [];
 
-    let parse_rules : boolean = true;
+    let parse_rules     : boolean = true;
 
     for ( const cur_input_str of pArray ) 
     {
@@ -263,21 +329,71 @@ function calcArray( pArray: string[], pKnzDebug : boolean = true ): void
         }
     }
 
-    wl( "Items " );
+    if ( pKnzDebug )
+    {
+        wl( "Items " );
+
+        for ( const item of vektor_items )
+        {
+            wl( item.toString() );
+        }
+
+        wl( "Rules" );
+
+        for ( const wf of vektor_workflow )
+        {
+            wl( wf.toString() );
+        }
+    }
+
+    const getWorkflowInst = ( pWorkflowID : string ) : Workflow | null => { 
+
+            for ( const wf of vektor_workflow )
+            {
+                if ( wf.isWorkflowID( pWorkflowID ) )
+                {
+                    return wf;
+                }
+            }
+
+            return null;
+    }
+
+    let result_part_01 : number = 0;
+    let result_part_02 : number = 0;
 
     for ( const item of vektor_items )
     {
-        wl( item.toString() );
-    }
+        let knz_item_rejected : boolean = false;
+        let knz_item_accepted : boolean = false;
 
-    wl( "Rules" );
+        let debug_s : string = "";
 
-    for ( const wf of vektor_workflow )
-    {
-        wl( wf.toString() );
+        let result_wf = "in"; //vektor_workflow[0]!.getWorkflowID();
+        
+        while ( ( knz_item_rejected === false ) && ( knz_item_accepted === false ) ) 
+        {
+            debug_s += result_wf + " -> ";
+
+            let cur_wf : Workflow = getWorkflowInst( result_wf )!;
+
+            result_wf = cur_wf!.checkItem( item );
+
+            knz_item_rejected = result_wf === "R";
+            knz_item_accepted = result_wf === "A";
+        }
+
+        debug_s += result_wf;
+
+        wl( item.toString() + "  " + debug_s );
+
+        if ( knz_item_accepted ) { result_part_01 += item.getValueAll();}
     }
 
     wl( "" );
+    wl( "" );
+    wl( "Result Part 1 = " + result_part_01 );
+    wl( "Result Part 2 = " + result_part_02 );
 }
 
 
@@ -309,7 +425,7 @@ function checkReaddatei(): void
 
         const arrFromFile = await readFileLines();
 
-        calcArray( arrFromFile, true );
+        calcArray( arrFromFile, false );
     } )();
 }
 
@@ -343,6 +459,7 @@ function getTestArray1(): string[]
 wl( "Day 19 - Aplenty" );
 
 calcArray( getTestArray1() );
+//checkReaddatei();
 
 wl( "Day 19 - Ende" );
 
