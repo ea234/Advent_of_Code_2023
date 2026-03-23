@@ -129,6 +129,15 @@ class ModuleBox
         return this.getQueueCount();
     }
 
+    public isLastPulseLow() : boolean
+    {
+        let item_q : Item | undefined = this.queue_pulses.peek();
+
+        if ( item_q == undefined ) return false;
+
+        return item_q.value === PULSE_LOW;
+    } 
+
     public consumePulse( pKnzDebug : boolean = false ) : boolean
     {
         if ( this.queue_pulses.isEmpty() ) 
@@ -412,6 +421,8 @@ function calcArray( pArray: string[], pKnzDebug : boolean = true, pKnzDebugItera
 
     let module_broadcaster = getModuleInst( "broadcaster" );
 
+    let module_rx = getModuleInst( "rx" );
+
     while ( iteration_nr < 1000 )
     {
         module_broadcaster?.receivePulse( "button", PULSE_LOW );
@@ -437,6 +448,16 @@ function calcArray( pArray: string[], pKnzDebug : boolean = true, pKnzDebugItera
                         queue_length += receiver_module_inst?.receivePulse( cur_module_inst.getModuleName(), cur_module_inst.getOutputPulse(), pKnzDebugIteration ) ?? 0;
                     }
                 }
+
+                if ( module_rx !== null )
+                {
+                    if ( module_rx.isLastPulseLow() ) 
+                    {
+                        wl( "last pulse low " + iteration_nr );
+                    }
+
+                }
+
 
                 queue_length += cur_module_inst.getQueueCount();
             }
@@ -556,10 +577,10 @@ function getTestArray2(): string[]
 
 wl( "Day 20 - Pulse Propagation" );
 
-calcArray( getTestArray1(), true, true );
+//calcArray( getTestArray1(), true, true );
 
 //calcArray( getTestArray2(), true, false );
 
-//checkReaddatei();
+checkReaddatei();
 
 wl( "Day 20 - Ende" );
