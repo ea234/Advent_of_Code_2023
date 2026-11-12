@@ -2,8 +2,12 @@ import { promises as fs } from 'fs';
 import * as readline from 'readline';
 
 /*
+ * --- Day 18: Lavaduct Lagoon ---
  * https://adventofcode.com/2023/day/18
  * 
+ * https://www.reddit.com/r/adventofcode/comments/18l0qtr/2023_day_18_solutions/
+ * 
+ * https://github.com/ea234/Advent_of_Code_2023/blob/main/src/day_18__Lavaduct_Lagoon.ts
  * 
  * 
  */
@@ -50,6 +54,7 @@ function parseInput( pInput: string ): DigStep | null
 
     return { direction, steps, color: `#${color}` };
 }
+
 
 function parseHexCode( input: string ): DigStep 
 {
